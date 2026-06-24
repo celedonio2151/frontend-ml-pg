@@ -25,9 +25,3 @@ export function calculateDaysRemaining(startDate: string | Date, endDate: string
   }
 }
 
-// Ejemplo de uso:
-const startDate = '2023-10-10T19:33:24.103Z';
-const endDate = '2023-10-15T19:33:24.103Z';
-
-// const result = calculateDaysRemaining(startDate, endDate);
-// console.log(result);

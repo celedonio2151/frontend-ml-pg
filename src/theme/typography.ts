@@ -1,7 +1,7 @@
 import type { TypographyVariantsOptions } from '@mui/material/styles';
 
 export const typography: TypographyVariantsOptions = {
-  fontFamily: 'Roboto, sans-serif',
+  fontFamily: 'Outfit, Inter, Roboto, system-ui, sans-serif',
   fontWeightLight: 300,
   fontWeightRegular: 400,
   fontWeightMedium: 500,

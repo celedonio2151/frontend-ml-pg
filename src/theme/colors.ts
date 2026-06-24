@@ -1,16 +1,16 @@
 import type { PaletteOptions } from '@mui/material/styles';
 
 type ColorModeTokens = {
+  action: NonNullable<PaletteOptions['action']>;
+  background: NonNullable<PaletteOptions['background']>;
+  divider: string;
+  error: NonNullable<PaletteOptions['error']>;
+  info: NonNullable<PaletteOptions['info']>;
   primary: NonNullable<PaletteOptions['primary']>;
   secondary: NonNullable<PaletteOptions['secondary']>;
-  error: NonNullable<PaletteOptions['error']>;
-  warning: NonNullable<PaletteOptions['warning']>;
-  info: NonNullable<PaletteOptions['info']>;
   success: NonNullable<PaletteOptions['success']>;
-  background: NonNullable<PaletteOptions['background']>;
   text: NonNullable<PaletteOptions['text']>;
-  action: NonNullable<PaletteOptions['action']>;
-  divider: string;
+  warning: NonNullable<PaletteOptions['warning']>;
 };
 
 export const colors = {
@@ -18,41 +18,46 @@ export const colors = {
     black: '#050607',
     white: '#ffffff',
   },
-  coffee: {
-    50: '#f8f1ec',
-    100: '#ead8cc',
-    200: '#d9baa4',
-    300: '#c69b7b',
-    400: '#a67b5b',
-    500: '#8d6e63',
-    600: '#6f4e37',
-    700: '#5d4037',
-    800: '#4e342e',
-    900: '#3e2723',
+  deep: {
+    900: '#0a1628',
+    950: '#060d18',
   },
-  caramel: {
-    50: '#fff8ef',
-    100: '#f9ead8',
-    200: '#efd3af',
-    300: '#e8c9a5',
-    400: '#d4a574',
-    500: '#b08968',
-    600: '#9a7456',
-    700: '#7d5b43',
-    800: '#5f4434',
-    900: '#3f2d24',
+  ocean: {
+    50: '#f0f9ff',
+    100: '#e0f2fe',
+    200: '#bae6fd',
+    300: '#7dd3fc',
+    400: '#38bdf8',
+    500: '#0ea5e9',
+    600: '#0284c7',
+    700: '#0369a1',
+    800: '#075985',
+    900: '#0c4a6e',
+    950: '#082f49',
+  },
+  aqua: {
+    50: '#ecfeff',
+    100: '#cffafe',
+    200: '#a5f3fc',
+    300: '#67e8f9',
+    400: '#22d3ee',
+    500: '#06b6d4',
+    600: '#0891b2',
+    700: '#0e7490',
+    800: '#155e75',
+    900: '#164e63',
   },
   neutral: {
-    50: '#f8f9fa',
-    100: '#f1f3f5',
-    200: '#e9ecef',
-    300: '#dee2e6',
-    400: '#ced4da',
-    500: '#adb5bd',
-    600: '#868e96',
-    700: '#495057',
-    800: '#343a40',
-    900: '#212529',
+    50: '#f8fafc',
+    100: '#f1f5f9',
+    200: '#e2e8f0',
+    300: '#cbd5e1',
+    400: '#94a3b8',
+    500: '#64748b',
+    600: '#475569',
+    700: '#334155',
+    800: '#1e293b',
+    900: '#0f172a',
   },
   red: {
     50: '#fff1f2',
@@ -72,26 +77,20 @@ export const colors = {
     500: '#10b981',
     700: '#047857',
   },
-  cyan: {
-    50: '#ecfeff',
-    300: '#67e8f9',
-    500: '#06b6d4',
-    700: '#0e7490',
-  },
 } as const;
 
 export const semanticColors: Record<'light' | 'dark', ColorModeTokens> = {
   light: {
     primary: {
-      main: colors.coffee[600],
-      light: colors.coffee[500],
-      dark: colors.coffee[800],
+      main: colors.aqua[600],
+      light: colors.aqua[400],
+      dark: colors.ocean[800],
       contrastText: colors.common.white,
     },
     secondary: {
-      main: colors.coffee[400],
-      light: colors.coffee[300],
-      dark: colors.coffee[700],
+      main: colors.ocean[500],
+      light: colors.ocean[300],
+      dark: colors.ocean[700],
       contrastText: colors.common.white,
     },
     error: {
@@ -107,9 +106,9 @@ export const semanticColors: Record<'light' | 'dark', ColorModeTokens> = {
       contrastText: colors.neutral[900],
     },
     info: {
-      main: colors.cyan[500],
-      light: colors.cyan[300],
-      dark: colors.cyan[700],
+      main: colors.ocean[500],
+      light: colors.ocean[300],
+      dark: colors.ocean[700],
       contrastText: colors.common.white,
     },
     success: {
@@ -119,36 +118,36 @@ export const semanticColors: Record<'light' | 'dark', ColorModeTokens> = {
       contrastText: colors.common.white,
     },
     background: {
-      default: '#f5f5f5',
-      paper: colors.common.white,
+      default: colors.ocean[50],
+      paper: 'rgba(255, 255, 255, 0.82)',
     },
     text: {
-      primary: '#333333',
-      secondary: '#666666',
-      disabled: colors.neutral[500],
+      primary: colors.deep[950],
+      secondary: colors.ocean[800],
+      disabled: colors.neutral[400],
     },
     action: {
-      active: colors.neutral[700],
-      hover: 'rgba(111, 78, 55, 0.08)',
-      selected: 'rgba(111, 78, 55, 0.14)',
-      disabled: 'rgba(33, 37, 41, 0.38)',
-      disabledBackground: 'rgba(33, 37, 41, 0.12)',
-      focus: 'rgba(111, 78, 55, 0.18)',
+      active: colors.ocean[800],
+      hover: 'rgba(6, 182, 212, 0.08)',
+      selected: 'rgba(6, 182, 212, 0.14)',
+      disabled: 'rgba(15, 23, 42, 0.38)',
+      disabledBackground: 'rgba(15, 23, 42, 0.12)',
+      focus: 'rgba(6, 182, 212, 0.18)',
     },
-    divider: 'rgba(33, 37, 41, 0.12)',
+    divider: 'rgba(3, 105, 161, 0.14)',
   },
   dark: {
     primary: {
-      main: colors.caramel[400],
-      light: colors.caramel[300],
-      dark: colors.caramel[500],
-      contrastText: colors.neutral[900],
+      main: colors.aqua[400],
+      light: colors.aqua[300],
+      dark: colors.aqua[600],
+      contrastText: colors.deep[950],
     },
     secondary: {
-      main: colors.coffee[500],
-      light: colors.coffee[300],
-      dark: colors.coffee[700],
-      contrastText: colors.neutral[900],
+      main: colors.ocean[400],
+      light: colors.ocean[300],
+      dark: colors.ocean[700],
+      contrastText: colors.deep[950],
     },
     error: {
       main: colors.red[300],
@@ -163,9 +162,9 @@ export const semanticColors: Record<'light' | 'dark', ColorModeTokens> = {
       contrastText: colors.neutral[900],
     },
     info: {
-      main: colors.cyan[300],
-      light: colors.cyan[50],
-      dark: colors.cyan[500],
+      main: colors.ocean[300],
+      light: colors.ocean[50],
+      dark: colors.ocean[500],
       contrastText: colors.neutral[900],
     },
     success: {
@@ -175,22 +174,22 @@ export const semanticColors: Record<'light' | 'dark', ColorModeTokens> = {
       contrastText: colors.neutral[900],
     },
     background: {
-      default: '#0f0f0f',
-      paper: '#1a1a1a',
+      default: colors.deep[950],
+      paper: 'rgba(14, 23, 42, 0.72)',
     },
     text: {
-      primary: '#e8e8e8',
-      secondary: '#b8b8b8',
+      primary: '#f8fbff',
+      secondary: '#8fb5cb',
       disabled: colors.neutral[600],
     },
     action: {
-      active: colors.neutral[200],
-      hover: 'rgba(212, 165, 116, 0.10)',
-      selected: 'rgba(212, 165, 116, 0.18)',
-      disabled: 'rgba(248, 249, 250, 0.38)',
-      disabledBackground: 'rgba(248, 249, 250, 0.12)',
-      focus: 'rgba(212, 165, 116, 0.24)',
+      active: colors.aqua[100],
+      hover: 'rgba(34, 211, 238, 0.10)',
+      selected: 'rgba(34, 211, 238, 0.18)',
+      disabled: 'rgba(248, 250, 252, 0.38)',
+      disabledBackground: 'rgba(248, 250, 252, 0.12)',
+      focus: 'rgba(34, 211, 238, 0.24)',
     },
-    divider: 'rgba(248, 249, 250, 0.14)',
+    divider: 'rgba(125, 211, 252, 0.14)',
   },
 } satisfies Record<'light' | 'dark', ColorModeTokens>;
