@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaAdmin — Sistema de Control de Agua</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        ocean: {
+                            50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc',
+                            400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1',
+                            800: '#075985', 900: '#0c4a6e', 950: '#082f49',
+                        },
+                        aqua: {
+                            50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9',
+                            400: '#22d3ee', 500: '#06b6d4', 600: '#0891b2', 700: '#0e7490',
+                            800: '#155e75', 900: '#164e63',
+                        },
+                        deep: { 900: '#0a1628', 950: '#060d18' }
+                    },
+                    animation: {
+                        'wave': 'wave 8s ease-in-out infinite',
+                        'wave-slow': 'wave 12s ease-in-out infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        wave: {
+                            '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-20px) rotate(2deg)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+                            '50%': { opacity: '0.8', transform: 'scale(1.05)' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background: #060d18; overflow-x: hidden; }
+        .glass { background: rgba(14, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(56, 189, 248, 0.08); }
+        .glass-strong { background: rgba(14, 23, 42, 0.85); backdrop-filter: blur(30px); border: 1px solid rgba(56, 189, 248, 0.12); }
+        .liquid-border { position: relative; overflow: hidden; }
+        .liquid-border::before {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
+            background: linear-gradient(135deg, rgba(6,182,212,0.5), rgba(14,165,233,0.2), rgba(6,182,212,0.1), rgba(14,165,233,0.4));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+        }
+        .droplet { position: fixed; width: 8px; height: 8px; background: radial-gradient(circle, rgba(34,211,238,0.8) 0%, rgba(6,182,212,0) 70%); border-radius: 50%; pointer-events: none; z-index: 9999; animation: dropletFade 1s ease-out forwards; }
+        @keyframes dropletFade { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a1628; }
+        ::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(6,182,212,0.5); }
+        .water-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(6,182,212,0.15), rgba(6,182,212,0.05)); transition: height 1s ease-out; border-radius: inherit; }
+        .ripple { position: absolute; border-radius: 50%; background: rgba(34,211,238,0.3); transform: scale(0); animation: rippleAnim 0.6s linear; pointer-events: none; }
+        @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+        .nav-item { position: relative; transition: all 0.3s ease; }
+        .nav-item::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 0; background: linear-gradient(to bottom, #22d3ee, #0ea5e9); border-radius: 0 4px 4px 0; transition: height 0.3s ease; }
+        .nav-item:hover::before, .nav-item.active::before { height: 60%; }
+        .nav-item.active { background: linear-gradient(90deg, rgba(6,182,212,0.1) 0%, transparent 100%); }
+        .code-block { background: #0d1117; border: 1px solid rgba(56,189,248,0.1); font-family: 'JetBrains Mono', monospace; }
+        .method-get { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .method-post { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+        .method-patch { background: rgba(234,179,8,0.15); color: #facc15; border: 1px solid rgba(234,179,8,0.3); }
+        .method-delete { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; position: relative; }
+        .status-dot::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; animation: pulseRing 2s ease-out infinite; }
+        .status-online { background: #22c55e; }
+        .status-online::after { border: 1px solid rgba(34,197,94,0.4); }
+        @keyframes pulseRing { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+        .bubble { position: absolute; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(34,211,238,0.15), transparent 70%); animation: bubbleRise linear infinite; pointer-events: none; }
+        @keyframes bubbleRise { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 0.3; } 100% { transform: translateY(-100px) scale(1); opacity: 0; } }
+        .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(6,182,212,0.15); }
+        .endpoint-row { transition: all 0.2s ease; }
+        .endpoint-row:hover { background: rgba(6,182,212,0.05); }
+        .tab-active { position: relative; }
+        .tab-active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #22d3ee, #0ea5e9); border-radius: 2px 2px 0 0; }
+        .progress-ring-circle { transition: stroke-dashoffset 0.5s ease-in-out; transform: rotate(-90deg); transform-origin: 50% 50%; }
+    </style>
+<base target="_blank">
+</head>
+<body class="text-slate-300 min-h-screen">
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-ocean-500/5 blur-[100px] animate-pulse-glow"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-aqua-500/5 blur-[120px] animate-pulse-glow" style="animation-delay: 1.5s;"></div>
+        <div class="absolute top-[40%] left-[50%] w-[300px] h-[300px] rounded-full bg-ocean-400/3 blur-[80px] animate-pulse-glow" style="animation-delay: 3s;"></div>
+        <div class="bubble" style="width: 20px; height: 20px; left: 10%; animation-duration: 12s; animation-delay: 0s;"></div>
+        <div class="bubble" style="width: 15px; height: 15px; left: 25%; animation-duration: 15s; animation-delay: 2s;"></div>
+        <div class="bubble" style="width: 25px; height: 25px; left: 45%; animation-duration: 10s; animation-delay: 4s;"></div>
+        <div class="bubble" style="width: 18px; height: 18px; left: 65%; animation-duration: 14s; animation-delay: 1s;"></div>
+        <div class="bubble" style="width: 12px; height: 12px; left: 80%; animation-duration: 11s; animation-delay: 3s;"></div>
+        <div class="bubble" style="width: 22px; height: 22px; left: 90%; animation-duration: 13s; animation-delay: 5s;"></div>
+        <div class="absolute inset-0 opacity-[0.02]" style="background-image: linear-gradient(rgba(34,211,238,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.3) 1px, transparent 1px); background-size: 50px 50px;"></div>
+    </div>
+
+    <div class="relative z-10 flex h-screen overflow-hidden">
+        <aside id="sidebar" class="w-72 h-full glass-strong flex flex-col border-r border-ocean-800/20 transition-all duration-300 z-50">
+            <div class="p-6 border-b border-ocean-800/20">
+                <div class="flex items-center gap-3 group cursor-pointer" onclick="showSection('dashboard')">
+                    <div class="relative w-10 h-10 flex items-center justify-center">
+                        <div class="absolute inset-0 bg-gradient-to-br from-aqua-400 to-ocean-600 rounded-xl rotate-3 group-hover:rotate-6 transition-transform duration-300 opacity-80"></div>
+                        <div class="absolute inset-0 bg-gradient-to-br from-aqua-300 to-ocean-500 rounded-xl flex items-center justify-center">
+                            <i data-lucide="droplets" class="w-5 h-5 text-white"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-white tracking-tight">Aqua<span class="text-aqua-400">Admin</span></h1>
+                        <p class="text-[10px] text-ocean-400 uppercase tracking-widest font-medium">Water Control System</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                <div class="px-3 mb-2 text-[10px] font-bold text-ocean-500 uppercase tracking-widest">Principal</div>
+                <a href="#" onclick="showSection('dashboard'); return false;" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white group" data-section="dashboard">
+                    <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] text-aqua-400 group-hover:text-aqua-300 transition-colors"></i>
+                    <span>Dashboard</span>
+                    <div class="ml-auto w-2 h-2 rounded-full bg-aqua-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></div>
+                </a>
+                <a href="#" onclick="showSection('users'); return false;" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ocean-300 hover:text-white group" data-section="users">
+                    <i data-lucide="users" class="w-[18px] h-[18px] text-ocean-500 group-hover:text-aqua-400 transition-colors"></i>
+                    <span>Usuarios</span>
+                    <span class="ml-auto text-[10px] bg-ocean-800/50 text-ocean-300 px-1.5 py-0.5 rounded-full">1.2k</span>
+                </a>
+                <a href="#" onclick="showSection('meters'); return false;" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ocean-300 hover:text-white group" data-section="meters">
+                    <i data-lucide="gauge" class="w-[18px] h-[18px] text-ocean-500 group-hover:text-aqua-400 transition-colors"></i>
+                    <span>Medidores</span>
+                </a>
+                <a href="#" onclick="showSection('readings'); return false;" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ocean-300 hover:text-white group" data-section="readings">
+                    <i data-lucide="clipboard-list" class="w-[18px] h-[18px] text-ocean-500 group-hover:text-aqua-400 transition-colors"></i>
+                    <span>Lecturas</span>
+                </a>
+                <a href="#" onclick="showSection('invoices'); return false;" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ocean-300 hover:text-white group" data-section="invoices">
+                    <i data-lucide="file-text" class="w-[18px] h-[18px] text-ocean-500 group-hover:text-aqua-400 transition-colors"></i>
+                    <span>Facturas</span>
+                    <span class="ml-auto text-[10px] bg-red-500/15 text-red-400 px-1.5 py-0.5 rounded-full border border-red-500/20">23</span>
+                </a>
+                <div class="px-3 mt-6 mb-2 text-[10px] font-bold text-ocean-500 uppercase tracking-widest">Sistema</div>
+                <a href="#" onclick="showSection('roles'); return false;" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ocean-300 hover:text-white group" data-section="roles">
+                    <i data-lucide="shield-check" class="w-[18px] h-[18px] text-ocean-500 group-hover:text-aqua-400 transition-colors"></i>
+                    <span>Roles</span>
+                </a>
+                <a href="#" onclick="showSection('directors'); return false;" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ocean-300 hover:text-white group" data-section="directors">
+                    <i data-lucide="crown" class="w-[18px] h-[18px] text-ocean-500 group-hover:text-aqua-400 transition-colors"></i>
+                    <span>Directiva</span>
+                </a>
+                <a href="#" onclick="showSection('api'); return false;" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ocean-300 hover:text-white group" data-section="api">
+                    <i data-lucide="code-2" class="w-[18px] h-[18px] text-ocean-500 group-hover:text-aqua-400 transition-colors"></i>
+                    <span>API Docs</span>
+                </a>
+                <a href="#" onclick="showSection('settings'); return false;" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ocean-300 hover:text-white group" data-section="settings">
+                    <i data-lucide="settings" class="w-[18px] h-[18px] text-ocean-500 group-hover:text-aqua-400 transition-colors"></i>
+                    <span>Configuración</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-ocean-800/20">
+                <div class="glass rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:bg-ocean-800/30 transition-colors">
+                    <div class="relative">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="Admin" class="w-10 h-10 rounded-full border-2 border-aqua-500/30">
+                        <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-deep-950"></div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-white truncate">Admin Principal</p>
+                        <p class="text-xs text-ocean-400 truncate">admin@aqua.system</p>
+                    </div>
+                    <i data-lucide="log-out" class="w-4 h-4 text-ocean-500 hover:text-red-400 transition-colors"></i>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            <header class="h-16 glass border-b border-ocean-800/20 flex items-center justify-between px-6 z-40">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-ocean-800/30 transition-colors">
+                        <i data-lucide="menu" class="w-5 h-5 text-ocean-300"></i>
+                    </button>
+                    <div class="hidden md:flex items-center gap-2 text-sm text-ocean-400">
+                        <span class="text-ocean-500">/</span>
+                        <span id="breadcrumb-current" class="text-white font-medium">Dashboard</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:flex items-center gap-2 bg-ocean-900/50 rounded-lg px-3 py-2 border border-ocean-800/30 focus-within:border-aqua-500/30 transition-colors">
+                        <i data-lucide="search" class="w-4 h-4 text-ocean-500"></i>
+                        <input type="text" placeholder="Buscar..." class="bg-transparent text-sm text-white placeholder-ocean-500 outline-none w-48">
+                        <kbd class="text-[10px] bg-ocean-800 text-ocean-400 px-1.5 py-0.5 rounded border border-ocean-700">⌘K</kbd>
+                    </div>
+                    <button class="relative p-2 rounded-lg hover:bg-ocean-800/30 transition-colors group">
+                        <i data-lucide="bell" class="w-5 h-5 text-ocean-400 group-hover:text-aqua-400 transition-colors"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    </button>
+                    <button class="p-2 rounded-lg hover:bg-ocean-800/30 transition-colors group">
+                        <i data-lucide="moon" class="w-5 h-5 text-ocean-400 group-hover:text-aqua-400 transition-colors"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div id="content-area" class="flex-1 overflow-y-auto p-6 relative">
+
+                <!-- DASHBOARD SECTION -->
+                <section id="section-dashboard" class="space-y-6 animate-slide-up">
+                    <div class="relative overflow-hidden rounded-2xl liquid-border bg-gradient-to-br from-ocean-900/80 to-deep-950 p-8">
+                        <div class="absolute top-0 right-0 w-64 h-64 opacity-20">
+                            <svg viewBox="0 0 200 200" class="w-full h-full animate-wave-slow">
+                                <path fill="rgba(34,211,238,0.3)" d="M0,100 C30,80 70,120 100,100 C130,80 170,120 200,100 L200,200 L0,200 Z">
+                                    <animate attributeName="d" dur="8s" repeatCount="indefinite"
+                                        values="M0,100 C30,80 70,120 100,100 C130,80 170,120 200,100 L200,200 L0,200 Z;
+                                                M0,100 C30,120 70,80 100,100 C130,120 170,80 200,100 L200,200 L0,200 Z;
+                                                M0,100 C30,80 70,120 100,100 C130,80 170,120 200,100 L200,200 L0,200 Z"/>
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2 py-0.5 rounded-full bg-aqua-500/10 text-aqua-400 text-xs font-medium border border-aqua-500/20">Sistema Activo</span>
+                                <span class="flex items-center gap-1.5 text-xs text-green-400">
+                                    <span class="status-dot status-online"></span>
+                                    API Online
+                                </span>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Panel de Control <span class="text-aqua-400">Hídrico</span></h2>
+                            <p class="text-ocean-400 max-w-xl">Gestión integral del sistema de consumo de agua. Monitorea medidores, lecturas, facturación y pagos en tiempo real.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="glass rounded-xl p-5 hover-lift relative overflow-hidden group cursor-pointer">
+                            <div class="water-fill" style="height: 65%;"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-10 h-10 rounded-lg bg-aqua-500/10 flex items-center justify-center border border-aqua-500/20">
+                                        <i data-lucide="droplets" class="w-5 h-5 text-aqua-400"></i>
+                                    </div>
+                                    <span class="text-xs text-green-400 flex items-center gap-1 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                                        <i data-lucide="trending-up" class="w-3 h-3"></i> +12%
+                                    </span>
+                                </div>
+                                <p class="text-2xl font-bold text-white">1,247</p>
+                                <p class="text-sm text-ocean-400">Medidores Activos</p>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-5 hover-lift relative overflow-hidden group cursor-pointer">
+                            <div class="water-fill" style="height: 42%;"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                                        <i data-lucide="file-warning" class="w-5 h-5 text-yellow-400"></i>
+                                    </div>
+                                    <span class="text-xs text-red-400 flex items-center gap-1 bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">
+                                        <i data-lucide="trending-up" class="w-3 h-3"></i> +5%
+                                    </span>
+                                </div>
+                                <p class="text-2xl font-bold text-white">23</p>
+                                <p class="text-sm text-ocean-400">Facturas Pendientes</p>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-5 hover-lift relative overflow-hidden group cursor-pointer">
+                            <div class="water-fill" style="height: 78%;"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                                        <i data-lucide="banknote" class="w-5 h-5 text-green-400"></i>
+                                    </div>
+                                    <span class="text-xs text-green-400 flex items-center gap-1 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                                        <i data-lucide="trending-up" class="w-3 h-3"></i> +8%
+                                    </span>
+                                </div>
+                                <p class="text-2xl font-bold text-white">Bs. 45,230</p>
+                                <p class="text-sm text-ocean-400">Recaudado Mes</p>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-5 hover-lift relative overflow-hidden group cursor-pointer">
+                            <div class="water-fill" style="height: 15%;"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                                        <i data-lucide="alert-triangle" class="w-5 h-5 text-red-400"></i>
+                                    </div>
+                                    <span class="text-xs text-red-400 flex items-center gap-1 bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">
+                                        <i data-lucide="trending-up" class="w-3 h-3"></i> +2
+                                    </span>
+                                </div>
+                                <p class="text-2xl font-bold text-white">7</p>
+                                <p class="text-sm text-ocean-400">Morosos Críticos</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 glass rounded-xl p-6 liquid-border">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-white">Consumo de Agua</h3>
+                                    <p class="text-sm text-ocean-400">Metros cúbicos por mes</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-aqua-500/10 text-aqua-400 border border-aqua-500/20">Mensual</button>
+                                    <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-ocean-400 hover:text-white hover:bg-ocean-800/30 transition-colors">Anual</button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="consumptionChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="glass rounded-xl p-6 liquid-border">
+                                <h3 class="text-sm font-semibold text-white mb-4">Tasa de Cobro</h3>
+                                <div class="flex items-center justify-center">
+                                    <div class="relative w-32 h-32">
+                                        <svg class="w-full h-full transform -rotate-90">
+                                            <circle cx="64" cy="64" r="56" stroke="rgba(14,23,42,0.8)" stroke-width="8" fill="none"/>
+                                            <circle cx="64" cy="64" r="56" stroke="url(#gradient)" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="351.86" stroke-dashoffset="70.37" class="progress-ring-circle"/>
+                                            <defs>
+                                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                    <stop offset="0%" stop-color="#22d3ee"/>
+                                                    <stop offset="100%" stop-color="#0ea5e9"/>
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                            <span class="text-2xl font-bold text-white">80%</span>
+                                            <span class="text-xs text-ocean-400">Cobrado</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 space-y-2">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-ocean-400">Pagado</span>
+                                        <span class="text-aqua-400 font-medium">Bs. 45,230</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-ocean-400">Pendiente</span>
+                                        <span class="text-yellow-400 font-medium">Bs. 11,307</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl p-6 liquid-border">
+                                <h3 class="text-sm font-semibold text-white mb-4">Actividad Reciente</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <i data-lucide="check" class="w-4 h-4 text-green-400"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-white">Pago recibido <span class="text-aqua-400">#INV-2024-001</span></p>
+                                            <p class="text-xs text-ocean-500">Hace 2 minutos</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-aqua-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <i data-lucide="clipboard-list" class="w-4 h-4 text-aqua-400"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-white">Nueva lectura registrada</p>
+                                            <p class="text-xs text-ocean-500">Hace 15 minutos</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <i data-lucide="alert-circle" class="w-4 h-4 text-yellow-400"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-white">Medidor #1042 rollover</p>
+                                            <p class="text-xs text-ocean-500">Hace 1 hora</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 glass rounded-xl p-6 liquid-border">
+                            <h3 class="text-lg font-semibold text-white mb-4">Distribución de Medidores</h3>
+                            <div class="h-48 rounded-lg bg-ocean-900/30 border border-ocean-800/20 flex items-center justify-center relative overflow-hidden">
+                                <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(circle at 20% 50%, rgba(34,211,238,0.2) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(14,165,233,0.2) 0%, transparent 50%);"></div>
+                                <div class="text-center relative z-10">
+                                    <i data-lucide="map" class="w-12 h-12 text-ocean-600 mx-auto mb-2"></i>
+                                    <p class="text-ocean-400 text-sm">Mapa interactivo de medidores</p>
+                                    <button class="mt-3 px-4 py-2 rounded-lg bg-aqua-500/10 text-aqua-400 text-sm border border-aqua-500/20 hover:bg-aqua-500/20 transition-colors">
+                                        Ver Mapa Completo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-6 liquid-border">
+                            <h3 class="text-sm font-semibold text-white mb-4">Acciones Rápidas</h3>
+                            <div class="space-y-2">
+                                <button class="w-full flex items-center gap-3 p-3 rounded-lg bg-ocean-900/30 border border-ocean-800/20 hover:border-aqua-500/30 hover:bg-ocean-800/30 transition-all group">
+                                    <div class="w-8 h-8 rounded-lg bg-aqua-500/10 flex items-center justify-center group-hover:bg-aqua-500/20 transition-colors">
+                                        <i data-lucide="plus" class="w-4 h-4 text-aqua-400"></i>
+                                    </div>
+                                    <span class="text-sm text-ocean-300 group-hover:text-white transition-colors">Nueva Lectura</span>
+                                </button>
+                                <button class="w-full flex items-center gap-3 p-3 rounded-lg bg-ocean-900/30 border border-ocean-800/20 hover:border-aqua-500/30 hover:bg-ocean-800/30 transition-all group">
+                                    <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
+                                        <i data-lucide="user-plus" class="w-4 h-4 text-green-400"></i>
+                                    </div>
+                                    <span class="text-sm text-ocean-300 group-hover:text-white transition-colors">Registrar Usuario</span>
+                                </button>
+                                <button class="w-full flex items-center gap-3 p-3 rounded-lg bg-ocean-900/30 border border-ocean-800/20 hover:border-aqua-500/30 hover:bg-ocean-800/30 transition-all group">
+                                    <div class="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition-colors">
+                                        <i data-lucide="qr-code" class="w-4 h-4 text-yellow-400"></i>
+                                    </div>
+                                    <span class="text-sm text-ocean-300 group-hover:text-white transition-colors">Generar QR BNB</span>
+                                </button>
+                                <button class="w-full flex items-center gap-3 p-3 rounded-lg bg-ocean-900/30 border border-ocean-800/20 hover:border-aqua-500/30 hover:bg-ocean-800/30 transition-all group">
+                                    <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+                                        <i data-lucide="file-bar-chart" class="w-4 h-4 text-purple-400"></i>
+                                    </div>
+                                    <span class="text-sm text-ocean-300 group-hover:text-white transition-colors">Reporte Mensual</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- USERS SECTION -->
+                <section id="section-users" class="hidden space-y-6 animate-slide-up">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Gestión de Usuarios</h2>
+                            <p class="text-sm text-ocean-400">Administra usuarios, roles y permisos del sistema</p>
+                        </div>
+                        <button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-aqua-600 to-ocean-600 text-white text-sm font-medium hover:from-aqua-500 hover:to-ocean-500 transition-all shadow-lg shadow-aqua-500/20">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            Nuevo Usuario
+                        </button>
+                    </div>
+                    <div class="glass rounded-xl p-4 flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-2 bg-ocean-900/50 rounded-lg px-3 py-2 border border-ocean-800/30 flex-1 min-w-[200px]">
+                            <i data-lucide="search" class="w-4 h-4 text-ocean-500"></i>
+                            <input type="text" placeholder="Buscar por nombre, CI o email..." class="bg-transparent text-sm text-white placeholder-ocean-500 outline-none w-full">
+                        </div>
+                        <select class="bg-ocean-900/50 border border-ocean-800/30 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-aqua-500/30">
+                            <option>Todos los roles</option><option>ADMIN</option><option>USER</option><option>TECHNICAL</option>
+                        </select>
+                        <select class="bg-ocean-900/50 border border-ocean-800/30 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-aqua-500/30">
+                            <option>Todos los estados</option><option>Activo</option><option>Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="glass rounded-xl overflow-hidden liquid-border">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-ocean-800/20">
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Usuario</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">CI</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Roles</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Estado</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Medidores</th>
+                                        <th class="text-right text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-ocean-800/10">
+                                    <tr class="endpoint-row group">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Juan" class="w-10 h-10 rounded-full border border-ocean-700">
+                                                <div>
+                                                    <p class="text-sm font-medium text-white">Juan Pérez García</p>
+                                                    <p class="text-xs text-ocean-500">juan.perez@email.com</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-ocean-300 font-mono">12345678</td>
+                                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs border border-purple-500/20">ADMIN</span></td>
+                                        <td class="px-6 py-4"><span class="flex items-center gap-1.5 text-xs text-green-400"><span class="w-2 h-2 rounded-full bg-green-500"></span>Activo</span></td>
+                                        <td class="px-6 py-4 text-sm text-ocean-300">2</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-aqua-400 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-red-400 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="endpoint-row group">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Maria" class="w-10 h-10 rounded-full border border-ocean-700">
+                                                <div>
+                                                    <p class="text-sm font-medium text-white">María López</p>
+                                                    <p class="text-xs text-ocean-500">maria@email.com</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-ocean-300 font-mono">87654321</td>
+                                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-full bg-aqua-500/10 text-aqua-400 text-xs border border-aqua-500/20">USER</span></td>
+                                        <td class="px-6 py-4"><span class="flex items-center gap-1.5 text-xs text-green-400"><span class="w-2 h-2 rounded-full bg-green-500"></span>Activo</span></td>
+                                        <td class="px-6 py-4 text-sm text-ocean-300">1</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-aqua-400 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-red-400 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="endpoint-row group">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos" class="w-10 h-10 rounded-full border border-ocean-700">
+                                                <div>
+                                                    <p class="text-sm font-medium text-white">Carlos Ruiz</p>
+                                                    <p class="text-xs text-ocean-500">carlos@email.com</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-ocean-300 font-mono">45678912</td>
+                                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-400 text-xs border border-yellow-500/20">TECHNICAL</span></td>
+                                        <td class="px-6 py-4"><span class="flex items-center gap-1.5 text-xs text-red-400"><span class="w-2 h-2 rounded-full bg-red-500"></span>Inactivo</span></td>
+                                        <td class="px-6 py-4 text-sm text-ocean-300">0</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-aqua-400 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-red-400 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="px-6 py-4 border-t border-ocean-800/20 flex items-center justify-between">
+                            <p class="text-xs text-ocean-500">Mostrando 1-3 de 1,247 usuarios</p>
+                            <div class="flex items-center gap-2">
+                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/30 text-ocean-500"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                                <button class="px-3 py-1 rounded-lg bg-aqua-500/10 text-aqua-400 text-xs border border-aqua-500/20">1</button>
+                                <button class="px-3 py-1 rounded-lg hover:bg-ocean-800/30 text-ocean-400 text-xs">2</button>
+                                <button class="px-3 py-1 rounded-lg hover:bg-ocean-800/30 text-ocean-400 text-xs">3</button>
+                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/30 text-ocean-500"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- METERS SECTION -->
+                <section id="section-meters" class="hidden space-y-6 animate-slide-up">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Medidores de Agua</h2>
+                            <p class="text-sm text-ocean-400">Control y seguimiento de medidores instalados</p>
+                        </div>
+                        <button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-aqua-600 to-ocean-600 text-white text-sm font-medium hover:from-aqua-500 hover:to-ocean-500 transition-all shadow-lg shadow-aqua-500/20">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Nuevo Medidor
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="glass rounded-xl p-5 liquid-border hover-lift relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-aqua-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-aqua-500/20 to-ocean-600/20 flex items-center justify-center border border-aqua-500/20">
+                                            <i data-lucide="gauge" class="w-6 h-6 text-aqua-400"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-lg font-bold text-white font-mono">#1001</p>
+                                            <p class="text-xs text-ocean-400">Medidor Principal</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs border border-green-500/20">Activo</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-sm"><span class="text-ocean-400">Propietario</span><span class="text-white">Juan Pérez</span></div>
+                                    <div class="flex justify-between text-sm"><span class="text-ocean-400">Lectura Actual</span><span class="text-aqua-400 font-mono font-medium">45,230 m³</span></div>
+                                    <div class="flex justify-between text-sm"><span class="text-ocean-400">Capacidad Máx</span><span class="text-white font-mono">999,999</span></div>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-ocean-800/20 flex items-center gap-2">
+                                    <div class="flex-1 h-1.5 bg-ocean-800/50 rounded-full overflow-hidden">
+                                        <div class="h-full bg-gradient-to-r from-aqua-400 to-ocean-500 rounded-full" style="width: 45%"></div>
+                                    </div>
+                                    <span class="text-xs text-ocean-500">45%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-5 liquid-border hover-lift relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-600/20 flex items-center justify-center border border-yellow-500/20">
+                                            <i data-lucide="gauge" class="w-6 h-6 text-yellow-400"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-lg font-bold text-white font-mono">#1002</p>
+                                            <p class="text-xs text-ocean-400">Medidor Secundario</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-400 text-xs border border-yellow-500/20">Alerta</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-sm"><span class="text-ocean-400">Propietario</span><span class="text-white">María López</span></div>
+                                    <div class="flex justify-between text-sm"><span class="text-ocean-400">Lectura Actual</span><span class="text-yellow-400 font-mono font-medium">987,654 m³</span></div>
+                                    <div class="flex justify-between text-sm"><span class="text-ocean-400">Capacidad Máx</span><span class="text-white font-mono">999,999</span></div>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-ocean-800/20 flex items-center gap-2">
+                                    <div class="flex-1 h-1.5 bg-ocean-800/50 rounded-full overflow-hidden">
+                                        <div class="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full" style="width: 98%"></div>
+                                    </div>
+                                    <span class="text-xs text-yellow-400">98%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-5 liquid-border hover-lift relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500/20 to-pink-600/20 flex items-center justify-center border border-red-500/20">
+                                            <i data-lucide="gauge" class="w-6 h-6 text-red-400"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-lg font-bold text-white font-mono">#1003</p>
+                                            <p class="text-xs text-ocean-400">Medidor Inactivo</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 rounded-full bg-red-500/10 text-red-400 text-xs border border-red-500/20">Inactivo</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-sm"><span class="text-ocean-400">Propietario</span><span class="text-white">Sin asignar</span></div>
+                                    <div class="flex justify-between text-sm"><span class="text-ocean-400">Lectura Actual</span><span class="text-red-400 font-mono font-medium">—</span></div>
+                                    <div class="flex justify-between text-sm"><span class="text-ocean-400">Capacidad Máx</span><span class="text-white font-mono">999,999</span></div>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-ocean-800/20 flex items-center gap-2">
+                                    <div class="flex-1 h-1.5 bg-ocean-800/50 rounded-full overflow-hidden">
+                                        <div class="h-full bg-red-500/50 rounded-full" style="width: 0%"></div>
+                                    </div>
+                                    <span class="text-xs text-red-400">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- READINGS SECTION -->
+                <section id="section-readings" class="hidden space-y-6 animate-slide-up">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Lecturas de Medidores</h2>
+                            <p class="text-sm text-ocean-400">Registro histórico de lecturas mensuales</p>
+                        </div>
+                        <button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-aqua-600 to-ocean-600 text-white text-sm font-medium hover:from-aqua-500 hover:to-ocean-500 transition-all shadow-lg shadow-aqua-500/20">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Nueva Lectura
+                        </button>
+                    </div>
+                    <div class="glass rounded-xl overflow-hidden liquid-border">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-ocean-800/20">
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Fecha</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Medidor</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Propietario</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Lectura Anterior</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Lectura Actual</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Consumo</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-ocean-800/10">
+                                    <tr class="endpoint-row">
+                                        <td class="px-6 py-4 text-sm text-ocean-300">2024-06-15</td>
+                                        <td class="px-6 py-4 text-sm text-aqua-400 font-mono">#1001</td>
+                                        <td class="px-6 py-4 text-sm text-white">Juan Pérez</td>
+                                        <td class="px-6 py-4 text-sm text-ocean-400 font-mono">44,980 m³</td>
+                                        <td class="px-6 py-4 text-sm text-aqua-400 font-mono">45,230 m³</td>
+                                        <td class="px-6 py-4 text-sm text-white font-medium">250 m³</td>
+                                        <td class="px-6 py-4 text-sm text-green-400 font-medium">Bs. 125.00</td>
+                                    </tr>
+                                    <tr class="endpoint-row">
+                                        <td class="px-6 py-4 text-sm text-ocean-300">2024-06-15</td>
+                                        <td class="px-6 py-4 text-sm text-aqua-400 font-mono">#1002</td>
+                                        <td class="px-6 py-4 text-sm text-white">María López</td>
+                                        <td class="px-6 py-4 text-sm text-ocean-400 font-mono">987,400 m³</td>
+                                        <td class="px-6 py-4 text-sm text-aqua-400 font-mono">987,654 m³</td>
+                                        <td class="px-6 py-4 text-sm text-white font-medium">254 m³</td>
+                                        <td class="px-6 py-4 text-sm text-green-400 font-medium">Bs. 127.00</td>
+                                    </tr>
+                                    <tr class="endpoint-row">
+                                        <td class="px-6 py-4 text-sm text-ocean-300">2024-05-15</td>
+                                        <td class="px-6 py-4 text-sm text-aqua-400 font-mono">#1001</td>
+                                        <td class="px-6 py-4 text-sm text-white">Juan Pérez</td>
+                                        <td class="px-6 py-4 text-sm text-ocean-400 font-mono">44,720 m³</td>
+                                        <td class="px-6 py-4 text-sm text-aqua-400 font-mono">44,980 m³</td>
+                                        <td class="px-6 py-4 text-sm text-white font-medium">260 m³</td>
+                                        <td class="px-6 py-4 text-sm text-green-400 font-medium">Bs. 130.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- INVOICES SECTION -->
+                <section id="section-invoices" class="hidden space-y-6 animate-slide-up">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Facturación</h2>
+                            <p class="text-sm text-ocean-400">Gestión de facturas y pagos</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-yellow-500/10 text-yellow-400 text-sm font-medium border border-yellow-500/20 hover:bg-yellow-500/20 transition-all">
+                                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                Ver Morosos
+                            </button>
+                            <button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-aqua-600 to-ocean-600 text-white text-sm font-medium hover:from-aqua-500 hover:to-ocean-500 transition-all shadow-lg shadow-aqua-500/20">
+                                <i data-lucide="file-plus" class="w-4 h-4"></i>
+                                Nueva Factura
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="glass rounded-xl p-5 liquid-border">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-ocean-400">Total Facturado</p>
+                                    <p class="text-2xl font-bold text-white mt-1">Bs. 56,537</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-aqua-500/10 flex items-center justify-center border border-aqua-500/20">
+                                    <i data-lucide="receipt" class="w-6 h-6 text-aqua-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-5 liquid-border">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-ocean-400">Pagado</p>
+                                    <p class="text-2xl font-bold text-green-400 mt-1">Bs. 45,230</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                                    <i data-lucide="check-circle-2" class="w-6 h-6 text-green-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-5 liquid-border">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-ocean-400">Pendiente</p>
+                                    <p class="text-2xl font-bold text-yellow-400 mt-1">Bs. 11,307</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                                    <i data-lucide="clock" class="w-6 h-6 text-yellow-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass rounded-xl overflow-hidden liquid-border">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-ocean-800/20">
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">N° Factura</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Cliente</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Monto</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Estado</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Método</th>
+                                        <th class="text-left text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Fecha</th>
+                                        <th class="text-right text-xs font-semibold text-ocean-400 uppercase tracking-wider px-6 py-4">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-ocean-800/10">
+                                    <tr class="endpoint-row group">
+                                        <td class="px-6 py-4 text-sm text-aqua-400 font-mono">#INV-2024-001</td>
+                                        <td class="px-6 py-4 text-sm text-white">Juan Pérez</td>
+                                        <td class="px-6 py-4 text-sm text-white font-medium">Bs. 125.00</td>
+                                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs border border-green-500/20">Pagado</span></td>
+                                        <td class="px-6 py-4 text-sm text-ocean-300">QR BNB</td>
+                                        <td class="px-6 py-4 text-sm text-ocean-400">2024-06-16</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-aqua-400 transition-colors"><i data-lucide="qr-code" class="w-4 h-4"></i></button>
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-aqua-400 transition-colors"><i data-lucide="file-text" class="w-4 h-4"></i></button>
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-aqua-400 transition-colors"><i data-lucide="download" class="w-4 h-4"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="endpoint-row group">
+                                        <td class="px-6 py-4 text-sm text-aqua-400 font-mono">#INV-2024-002</td>
+                                        <td class="px-6 py-4 text-sm text-white">María López</td>
+                                        <td class="px-6 py-4 text-sm text-white font-medium">Bs. 127.00</td>
+                                        <td class="px-6 py-4"><span class="px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-400 text-xs border border-yellow-500/20">Pendiente</span></td>
+                                        <td class="px-6 py-4 text-sm text-ocean-300">—</td>
+                                        <td class="px-6 py-4 text-sm text-ocean-400">2024-06-15</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-aqua-400 transition-colors"><i data-lucide="qr-code" class="w-4 h-4"></i></button>
+                                                <button class="p-1.5 rounded-lg hover:bg-ocean-800/50 text-ocean-400 hover:text-aqua-400 transition-colors"><i data-lucide="check" class="w-4 h-4"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ROLES SECTION -->
+                <section id="section-roles" class="hidden space-y-6 animate-slide-up">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Roles del Sistema</h2>
+                            <p class="text-sm text-ocean-400">Gestión de permisos y roles de usuario</p>
+                        </div>
+                        <button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-aqua-600 to-ocean-600 text-white text-sm font-medium hover:from-aqua-500 hover:to-ocean-500 transition-all shadow-lg shadow-aqua-500/20">
+                            <i data-lucide="shield-plus" class="w-4 h-4"></i>
+                            Nuevo Rol
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="glass rounded-xl p-6 liquid-border hover-lift">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                                    <i data-lucide="crown" class="w-6 h-6 text-purple-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">ADMIN</h3>
+                                    <p class="text-xs text-ocean-400">Rol por defecto</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-ocean-300 mb-4">Acceso total al sistema. Gestión de usuarios, roles, medidores y facturación.</p>
+                            <div class="flex items-center justify-between pt-4 border-t border-ocean-800/20">
+                                <span class="text-xs text-ocean-500">45 usuarios</span>
+                                <span class="px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs border border-green-500/20">Activo</span>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-6 liquid-border hover-lift">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-aqua-500/10 flex items-center justify-center border border-aqua-500/20">
+                                    <i data-lucide="user" class="w-6 h-6 text-aqua-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">USER</h3>
+                                    <p class="text-xs text-ocean-400">Rol por defecto</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-ocean-300 mb-4">Usuario final. Acceso a sus medidores, lecturas y facturas personales.</p>
+                            <div class="flex items-center justify-between pt-4 border-t border-ocean-800/20">
+                                <span class="text-xs text-ocean-500">1,102 usuarios</span>
+                                <span class="px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs border border-green-500/20">Activo</span>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-6 liquid-border hover-lift">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                                    <i data-lucide="wrench" class="w-6 h-6 text-yellow-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">TECHNICAL</h3>
+                                    <p class="text-xs text-ocean-400">Rol por defecto</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-ocean-300 mb-4">Técnico de campo. Registro de lecturas y mantenimiento de medidores.</p>
+                            <div class="flex items-center justify-between pt-4 border-t border-ocean-800/20">
+                                <span class="text-xs text-ocean-500">12 usuarios</span>
+                                <span class="px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs border border-green-500/20">Activo</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DIRECTORS SECTION -->
+                <section id="section-directors" class="hidden space-y-6 animate-slide-up">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Directiva</h2>
+                            <p class="text-sm text-ocean-400">Miembros de la junta directiva</p>
+                        </div>
+                        <button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-aqua-600 to-ocean-600 text-white text-sm font-medium hover:from-aqua-500 hover:to-ocean-500 transition-all shadow-lg shadow-aqua-500/20">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            Agregar Miembro
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="glass rounded-xl p-5 liquid-border hover-lift text-center">
+                            <div class="relative inline-block mb-3">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=president" class="w-20 h-20 rounded-full border-2 border-purple-500/30 mx-auto">
+                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 text-[10px] border border-purple-500/20 font-medium">#1</div>
+                            </div>
+                            <h3 class="text-sm font-bold text-white">Juan Pérez</h3>
+                            <p class="text-xs text-purple-400 font-medium mt-1">Presidente</p>
+                            <p class="text-xs text-ocean-500 mt-1">2024 - 2026</p>
+                        </div>
+                        <div class="glass rounded-xl p-5 liquid-border hover-lift text-center">
+                            <div class="relative inline-block mb-3">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=secretary" class="w-20 h-20 rounded-full border-2 border-aqua-500/30 mx-auto">
+                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-aqua-500/20 text-aqua-400 text-[10px] border border-aqua-500/20 font-medium">#2</div>
+                            </div>
+                            <h3 class="text-sm font-bold text-white">María López</h3>
+                            <p class="text-xs text-aqua-400 font-medium mt-1">Secretaria</p>
+                            <p class="text-xs text-ocean-500 mt-1">2024 - 2026</p>
+                        </div>
+                        <div class="glass rounded-xl p-5 liquid-border hover-lift text-center">
+                            <div class="relative inline-block mb-3">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=treasurer" class="w-20 h-20 rounded-full border-2 border-yellow-500/30 mx-auto">
+                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-[10px] border border-yellow-500/20 font-medium">#3</div>
+                            </div>
+                            <h3 class="text-sm font-bold text-white">Carlos Ruiz</h3>
+                            <p class="text-xs text-yellow-400 font-medium mt-1">Tesorero</p>
+                            <p class="text-xs text-ocean-500 mt-1">2024 - 2026</p>
+                        </div>
+                        <div class="glass rounded-xl p-5 liquid-border hover-lift text-center border-dashed border-2 border-ocean-800/30 flex flex-col items-center justify-center cursor-pointer hover:border-aqua-500/30 transition-colors">
+                            <div class="w-16 h-16 rounded-full bg-ocean-800/30 flex items-center justify-center mb-2">
+                                <i data-lucide="plus" class="w-6 h-6 text-ocean-500"></i>
+                            </div>
+                            <p class="text-sm text-ocean-400">Agregar miembro</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- API DOCS SECTION -->
+                <section id="section-api" class="hidden space-y-6 animate-slide-up">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Documentación API</h2>
+                            <p class="text-sm text-ocean-400">Endpoints del sistema Water Payment API</p>
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-ocean-900/50 border border-ocean-800/30">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span class="text-xs text-ocean-300">v1.0</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1 overflow-x-auto pb-2 border-b border-ocean-800/20">
+                        <button onclick="filterApi('all')" class="api-tab tab-active px-4 py-2 text-sm font-medium text-white whitespace-nowrap" data-tag="all">Todos</button>
+                        <button onclick="filterApi('Auth')" class="api-tab px-4 py-2 text-sm font-medium text-ocean-400 hover:text-white whitespace-nowrap transition-colors" data-tag="Auth">Auth</button>
+                        <button onclick="filterApi('Users')" class="api-tab px-4 py-2 text-sm font-medium text-ocean-400 hover:text-white whitespace-nowrap transition-colors" data-tag="Users">Users</button>
+                        <button onclick="filterApi('Roles')" class="api-tab px-4 py-2 text-sm font-medium text-ocean-400 hover:text-white whitespace-nowrap transition-colors" data-tag="Roles">Roles</button>
+                        <button onclick="filterApi('Water')" class="api-tab px-4 py-2 text-sm font-medium text-ocean-400 hover:text-white whitespace-nowrap transition-colors" data-tag="Water">Water Meters</button>
+                        <button onclick="filterApi('Readings')" class="api-tab px-4 py-2 text-sm font-medium text-ocean-400 hover:text-white whitespace-nowrap transition-colors" data-tag="Readings">Readings</button>
+                        <button onclick="filterApi('Invoices')" class="api-tab px-4 py-2 text-sm font-medium text-ocean-400 hover:text-white whitespace-nowrap transition-colors" data-tag="Invoices">Invoices</button>
+                        <button onclick="filterApi('Checks')" class="api-tab px-4 py-2 text-sm font-medium text-ocean-400 hover:text-white whitespace-nowrap transition-colors" data-tag="Checks">Validations</button>
+                    </div>
+
+                    <div class="space-y-3" id="api-endpoints">
+                        <!-- Auth Endpoints -->
+                        <div class="api-group" data-tag="Auth">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">Autenticación</h3>
+                            <div class="glass rounded-xl overflow-hidden liquid-border">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/auth/register</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Registrar nuevo usuario</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/auth/register</span>
+<span class="text-ocean-500">Content-Type:</span> application/json
+
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"ci"</span>: <span class="text-green-400">"12345678"</span>,
+  <span class="text-ocean-500">"name"</span>: <span class="text-green-400">"Juan"</span>,
+  <span class="text-ocean-500">"surname"</span>: <span class="text-green-400">"Pérez García"</span>,
+  <span class="text-ocean-500">"email"</span>: <span class="text-green-400">"juan.perez@email.com"</span>,
+  <span class="text-ocean-500">"password"</span>: <span class="text-green-400">"SecurePass123!"</span>,
+  <span class="text-ocean-500">"phone_number"</span>: <span class="text-green-400">"70012345"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/auth/login</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Iniciar sesión con Email/Password</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/auth/login</span>
+<span class="text-ocean-500">Headers:</span>
+  <span class="text-ocean-500">user-agent:</span> <span class="text-green-400">Mozilla/5.0...</span>
+
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"email"</span>: <span class="text-green-400">"juan.perez@email.com"</span>,
+  <span class="text-ocean-500">"password"</span>: <span class="text-green-400">"SecurePass123!"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/auth/login-ci</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Iniciar sesión solo con CI (Rol USER)</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/auth/login-ci</span>
+<span class="text-ocean-500">Headers:</span>
+  <span class="text-ocean-500">user-agent:</span> <span class="text-green-400">required</span>
+
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"ci"</span>: <span class="text-green-400">"12345678"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/auth/refresh</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Refrescar access token</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/auth/refresh</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"refreshToken"</span>: <span class="text-green-400">"uuid-refresh-token"</span>
+}
+
+<span class="text-ocean-500">Responses:</span>
+  <span class="text-green-400">200</span> - Nuevos tokens generados
+  <span class="text-red-400">401</span> - Refresh token inválido o expirado</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/auth/logout</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Cerrar sesión</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/auth/logout-all</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Cerrar todas las sesiones</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/auth/forgot-password</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Solicitar recuperación de contraseña</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/auth/forgot-password</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"email"</span>: <span class="text-green-400">"user@example.com"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/auth/reset-password</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Restablecer contraseña</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/auth/reset-password</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"token"</span>: <span class="text-green-400">"recovery-token"</span>,
+  <span class="text-ocean-500">"newPassword"</span>: <span class="text-green-400">"NewPass123!"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/auth/google</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Iniciar login con Google</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/auth/google/callback</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Callback de Google</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Users Endpoints -->
+                        <div class="api-group mt-6" data-tag="Users">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">Usuarios</h3>
+                            <div class="glass rounded-xl overflow-hidden liquid-border">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/users</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Listar usuarios con filtros y paginación</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-green-400">GET</span> <span class="text-aqua-400">/users</span>
+<span class="text-ocean-500">Query params:</span>
+  <span class="text-ocean-500">limit</span>: number (default: 10)
+  <span class="text-ocean-500">offset</span>: number (default: 0)
+  <span class="text-ocean-500">name</span>: string (búsqueda parcial)
+  <span class="text-ocean-500">surname</span>: string (búsqueda parcial)
+  <span class="text-ocean-500">ci</span>: string
+  <span class="text-ocean-500">email</span>: string
+  <span class="text-ocean-500">status</span>: boolean</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/users/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Obtener usuario por ID</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-patch px-2 py-1 rounded text-xs font-mono font-bold">PATCH</span>
+                                        <code class="text-sm text-white font-mono">/users/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Actualizar usuario</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-yellow-400">PATCH</span> <span class="text-aqua-400">/users/{id}</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"email"</span>: <span class="text-green-400">"nuevo@email.com"</span>,
+  <span class="text-ocean-500">"phone_number"</span>: <span class="text-green-400">"70012345"</span>,
+  <span class="text-ocean-500">"profile_img"</span>: <span class="text-green-400">"url"</span>,
+  <span class="text-ocean-500">"status"</span>: <span class="text-purple-400">true</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-delete px-2 py-1 rounded text-xs font-mono font-bold">DELETE</span>
+                                        <code class="text-sm text-white font-mono">/users/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Desactivar usuario</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/users/{id}/roles/{role}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Asignar rol a usuario</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Roles Endpoints -->
+                        <div class="api-group mt-6" data-tag="Roles">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">Roles</h3>
+                            <div class="glass rounded-xl overflow-hidden liquid-border">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/roles</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Crear nuevo rol (Solo ADMIN)</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/roles</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"name"</span>: <span class="text-green-400">"SUPER_ADMIN"</span>,
+  <span class="text-ocean-500">"description"</span>: <span class="text-green-400">"Rol con permisos totales"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/roles</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Listar todos los roles activos</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/roles/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Obtener un rol por ID</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-patch px-2 py-1 rounded text-xs font-mono font-bold">PATCH</span>
+                                        <code class="text-sm text-white font-mono">/roles/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Actualizar un rol</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-delete px-2 py-1 rounded text-xs font-mono font-bold">DELETE</span>
+                                        <code class="text-sm text-white font-mono">/roles/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Eliminar (desactivar) rol</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Water Meters Endpoints -->
+                        <div class="api-group mt-6" data-tag="Water">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">Medidores de Agua</h3>
+                            <div class="glass rounded-xl overflow-hidden liquid-border">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/water-meters</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Crear nuevo medidor</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/water-meters</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"meter_number"</span>: <span class="text-purple-400">1001</span>,
+  <span class="text-ocean-500">"user_id"</span>: <span class="text-green-400">"uuid"</span>,
+  <span class="text-ocean-500">"maximum_capacity"</span>: <span class="text-purple-400">999999</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/water-meters</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Listar medidores con filtros</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-green-400">GET</span> <span class="text-aqua-400">/water-meters</span>
+<span class="text-ocean-500">Query params:</span>
+  <span class="text-ocean-500">limit</span>, <span class="text-ocean-500">offset</span>, <span class="text-ocean-500">ownerCi</span>,
+  <span class="text-ocean-500">ownerName</span>, <span class="text-ocean-500">meterNumber</span>,
+  <span class="text-ocean-500">status</span>, <span class="text-ocean-500">createdFrom</span>, <span class="text-ocean-500">createdTo</span></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/water-meters/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Obtener medidor por ID</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-patch px-2 py-1 rounded text-xs font-mono font-bold">PATCH</span>
+                                        <code class="text-sm text-white font-mono">/water-meters/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Actualizar datos medidor</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-yellow-400">PATCH</span> <span class="text-aqua-400">/water-meters/{id}</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"maximum_capacity"</span>: <span class="text-purple-400">999999</span>,
+  <span class="text-ocean-500">"status"</span>: <span class="text-purple-400">true</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/water-meters/{id}/change-owner</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Cambiar propietario</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/water-meters/{id}/change-owner</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"new_user_id"</span>: <span class="text-green-400">"uuid-nuevo-propietario"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/water-meters/{id}/rollover</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Acción manual de rollover</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/water-meters/{id}/rollover</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"action"</span>: <span class="text-green-400">"RESET"</span> | <span class="text-green-400">"DECOMMISSION"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Meter Readings Endpoints -->
+                        <div class="api-group mt-6" data-tag="Readings">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">Lecturas de Medidor</h3>
+                            <div class="glass rounded-xl overflow-hidden liquid-border">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/meter-readings</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Registrar lectura (Genera factura automática)</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/meter-readings</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"water_meter_id"</span>: <span class="text-green-400">"uuid"</span>,
+  <span class="text-ocean-500">"date"</span>: <span class="text-green-400">"2024-06-15T00:00:00Z"</span>,
+  <span class="text-ocean-500">"current_value"</span>: <span class="text-purple-400">45230</span>,
+  <span class="text-ocean-500">"meter_image"</span>: <span class="text-green-400">"url o base64"</span>,
+  <span class="text-ocean-500">"description"</span>: <span class="text-green-400">"Lectura mensual"</span>,
+  <span class="text-ocean-500">"is_rollover"</span>: <span class="text-purple-400">false</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/meter-readings</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Listar lecturas con filtros</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/meter-readings/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Obtener lectura por ID</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invoices Endpoints -->
+                        <div class="api-group mt-6" data-tag="Invoices">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">Facturas</h3>
+                            <div class="glass rounded-xl overflow-hidden liquid-border">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/invoices</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Listar facturas con filtros</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-green-400">GET</span> <span class="text-aqua-400">/invoices</span>
+<span class="text-ocean-500">Query params:</span>
+  <span class="text-ocean-500">limit</span>, <span class="text-ocean-500">offset</span>, <span class="text-ocean-500">isPaid</span>,
+  <span class="text-ocean-500">ownerCi</span>, <span class="text-ocean-500">morosos</span> (impago > 3 meses)</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/invoices/morosos</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Obtener lista de morosos</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/invoices/{id}/qr</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Generar código QR BNB para pago</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-green-400">GET</span> <span class="text-aqua-400">/invoices/{id}/qr</span>
+<span class="text-ocean-500">Response:</span> {
+  <span class="text-ocean-500">"qrId"</span>: <span class="text-green-400">"ACJSS1231"</span>,
+  <span class="text-ocean-500">"qrImage"</span>: <span class="text-green-400">"base64_string..."</span>,
+  <span class="text-ocean-500">"expiresAt"</span>: <span class="text-green-400">"2026-01-27T00:00:00.000Z"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/invoices/{id}/qr-status</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Verificar estado de pago del QR</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-green-400">GET</span> <span class="text-aqua-400">/invoices/{id}/qr-status</span>
+<span class="text-ocean-500">Response:</span> {
+  <span class="text-ocean-500">"status"</span>: <span class="text-green-400">"PAID"</span>,
+  <span class="text-ocean-500">"isPaid"</span>: <span class="text-purple-400">true</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/invoices/webhook/bnb</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Webhook BNB (Callback)</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/invoices/webhook/bnb</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"event"</span>: <span class="text-green-400">"payment.completed"</span>,
+  <span class="text-ocean-500">"qrId"</span>: <span class="text-green-400">"ACJSS1231"</span>,
+  <span class="text-ocean-500">"transactionId"</span>: <span class="text-green-400">"txn-123"</span>,
+  <span class="text-ocean-500">"amount"</span>: <span class="text-purple-400">125.00</span>,
+  <span class="text-ocean-500">"currency"</span>: <span class="text-green-400">"BOB"</span>,
+  <span class="text-ocean-500">"paidAt"</span>: <span class="text-green-400">"2024-06-16T10:30:00Z"</span>,
+  <span class="text-ocean-500">"payerName"</span>: <span class="text-green-400">"Juan Pérez"</span>,
+  <span class="text-ocean-500">"signature"</span>: <span class="text-green-400">"hmac-signature"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/invoices/{id}/pay</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Marcar factura como pagada (Manual)</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/invoices/{id}/pay</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"paymentMethod"</span>: <span class="text-green-400">"CASH"</span> | <span class="text-green-400">"TRANSFER"</span> | <span class="text-green-400">"QR"</span> | <span class="text-green-400">"OTHER"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/invoices/{id}/json</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Obtener datos JSON de la factura</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/invoices/{id}/pdf</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Descargar factura PDF</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Checks Endpoints -->
+                        <div class="api-group mt-6" data-tag="Checks">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">Validaciones (Checks)</h3>
+                            <div class="glass rounded-xl overflow-hidden liquid-border">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/checks/email</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Verificar si un email ya existe</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-green-400">GET</span> <span class="text-aqua-400">/checks/email?value=juan@email.com</span></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/checks/ci</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Verificar si un CI ya existe</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/checks/phone</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Verificar si un teléfono ya existe</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/checks/meter-number</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Verificar si un número de medidor ya existe</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 ml-auto transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invoice Tables & Board Directors -->
+                        <div class="api-group mt-6" data-tag="Invoices">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">Tablas de Facturas</h3>
+                            <div class="glass rounded-xl overflow-hidden liquid-border">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/invoice-tables</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Crear tabla consolidada de facturas</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/invoice-tables</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"invoice_ids"</span>: [<span class="text-green-400">"uuid-1"</span>, <span class="text-green-400">"uuid-2"</span>]
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/invoice-tables</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Listar tablas de facturas</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/invoice-tables/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Obtener tabla por ID</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="api-group mt-6" data-tag="Directors">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">Directiva</h3>
+                            <div class="glass rounded-xl overflow-hidden liquid-border">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-post px-2 py-1 rounded text-xs font-mono font-bold">POST</span>
+                                        <code class="text-sm text-white font-mono">/board-directors</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Registrar miembro directiva</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-purple-400">POST</span> <span class="text-aqua-400">/board-directors</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"user_id"</span>: <span class="text-green-400">"uuid"</span>,
+  <span class="text-ocean-500">"start_date"</span>: <span class="text-green-400">"2024-01-01"</span>,
+  <span class="text-ocean-500">"end_date"</span>: <span class="text-green-400">"2026-12-31"</span>,
+  <span class="text-ocean-500">"position_role"</span>: <span class="text-green-400">"Presidente"</span>,
+  <span class="text-ocean-500">"order"</span>: <span class="text-purple-400">1</span>,
+  <span class="text-ocean-500">"description"</span>: <span class="text-green-400">"Presidente de la junta"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-get px-2 py-1 rounded text-xs font-mono font-bold">GET</span>
+                                        <code class="text-sm text-white font-mono">/board-directors</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Listar directiva actual</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="glass rounded-xl overflow-hidden liquid-border mt-2">
+                                <div class="endpoint-row p-4 cursor-pointer hover:bg-ocean-800/20 transition-colors" onclick="toggleEndpoint(this)">
+                                    <div class="flex items-center gap-3">
+                                        <span class="method-patch px-2 py-1 rounded text-xs font-mono font-bold">PATCH</span>
+                                        <code class="text-sm text-white font-mono">/board-directors/{id}</code>
+                                        <span class="text-xs text-ocean-500 ml-2">Actualizar miembro directiva</span>
+                                        <span class="ml-auto px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 text-[10px] border border-yellow-500/20">Bearer</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-ocean-500 transition-transform"></i>
+                                    </div>
+                                    <div class="hidden mt-4 pt-4 border-t border-ocean-800/20">
+                                        <div class="code-block rounded-lg p-4 text-xs overflow-x-auto">
+                                            <pre class="text-ocean-300"><span class="text-yellow-400">PATCH</span> <span class="text-aqua-400">/board-directors/{id}</span>
+<span class="text-ocean-500">Body:</span> {
+  <span class="text-ocean-500">"position_role"</span>: <span class="text-green-400">"Vicepresidente"</span>,
+  <span class="text-ocean-500">"order"</span>: <span class="text-purple-400">2</span>,
+  <span class="text-ocean-500">"end_date"</span>: <span class="text-green-400">"2026-12-31"</span>,
+  <span class="text-ocean-500">"description"</span>: <span class="text-green-400">"Actualización de cargo"</span>
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WebSocket Info -->
+                        <div class="api-group mt-6" data-tag="all">
+                            <h3 class="text-xs font-bold text-ocean-500 uppercase tracking-widest mb-3 px-1">WebSockets</h3>
+                            <div class="glass rounded-xl p-6 liquid-border">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 flex-shrink-0">
+                                        <i data-lucide="radio" class="w-6 h-6 text-purple-400"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-bold text-white mb-1">Notificaciones en Tiempo Real</h4>
+                                        <p class="text-xs text-ocean-400 mb-3">Endpoint: <code class="text-aqua-400">/notifications</code> | Auth: JWT en Handshake</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div class="bg-ocean-900/30 rounded-lg p-3 border border-ocean-800/20">
+                                                <p class="text-xs font-semibold text-aqua-400 mb-1">Eventos Escuchables</p>
+                                                <ul class="space-y-1 text-xs text-ocean-300">
+                                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>invoice:paid</li>
+                                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-aqua-400"></span>reading:created</li>
+                                                </ul>
+                                            </div>
+                                            <div class="bg-ocean-900/30 rounded-lg p-3 border border-ocean-800/20">
+                                                <p class="text-xs font-semibold text-purple-400 mb-1">Canales (Rooms)</p>
+                                                <ul class="space-y-1 text-xs text-ocean-300">
+                                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>user:{userId}</li>
+                                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>admin</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SETTINGS SECTION -->
+                <section id="section-settings" class="hidden space-y-6 animate-slide-up">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Configuración</h2>
+                        <p class="text-sm text-ocean-400">Ajustes del sistema y preferencias</p>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass rounded-xl p-6 liquid-border">
+                            <h3 class="text-lg font-semibold text-white mb-4">General</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-white">Notificaciones Push</p>
+                                        <p class="text-xs text-ocean-500">Recibir alertas en tiempo real</p>
+                                    </div>
+                                    <button class="w-11 h-6 rounded-full bg-aqua-500 relative transition-colors" onclick="this.classList.toggle('bg-aqua-500'); this.classList.toggle('bg-ocean-700')">
+                                        <span class="absolute right-1 top-1 w-4 h-4 rounded-full bg-white shadow transition-transform"></span>
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-white">Modo Oscuro</p>
+                                        <p class="text-xs text-ocean-500">Tema visual del panel</p>
+                                    </div>
+                                    <button class="w-11 h-6 rounded-full bg-aqua-500 relative transition-colors">
+                                        <span class="absolute right-1 top-1 w-4 h-4 rounded-full bg-white shadow transition-transform"></span>
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-white">Sonidos</p>
+                                        <p class="text-xs text-ocean-500">Efectos de sonido en acciones</p>
+                                    </div>
+                                    <button class="w-11 h-6 rounded-full bg-ocean-700 relative transition-colors" onclick="this.classList.toggle('bg-aqua-500'); this.classList.toggle('bg-ocean-700')">
+                                        <span class="absolute left-1 top-1 w-4 h-4 rounded-full bg-white shadow transition-transform"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-xl p-6 liquid-border">
+                            <h3 class="text-lg font-semibold text-white mb-4">Seguridad</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-white">Autenticación 2FA</p>
+                                        <p class="text-xs text-ocean-500">Verificación en dos pasos</p>
+                                    </div>
+                                    <button class="px-3 py-1.5 rounded-lg bg-aqua-500/10 text-aqua-400 text-xs border border-aqua-500/20 hover:bg-aqua-500/20 transition-colors">Configurar</button>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-white">Sesiones Activas</p>
+                                        <p class="text-xs text-ocean-500">3 dispositivos conectados</p>
+                                    </div>
+                                    <button class="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-xs border border-red-500/20 hover:bg-red-500/20 transition-colors">Cerrar Todo</button>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-white">Cambiar Contraseña</p>
+                                        <p class="text-xs text-ocean-500">Último cambio: hace 30 días</p>
+                                    </div>
+                                    <button class="px-3 py-1.5 rounded-lg bg-ocean-800/50 text-ocean-300 text-xs border border-ocean-700 hover:bg-ocean-700/50 transition-colors">Cambiar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function showSection(sectionId) {
+            document.querySelectorAll('section[id^="section-"]').forEach(s => s.classList.add('hidden'));
+            const target = document.getElementById('section-' + sectionId);
+            if (target) target.classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.section === sectionId) item.classList.add('active');
+            });
+            const names = {
+                'dashboard': 'Dashboard', 'users': 'Usuarios', 'meters': 'Medidores',
+                'readings': 'Lecturas', 'invoices': 'Facturas', 'roles': 'Roles',
+                'directors': 'Directiva', 'api': 'API Docs', 'settings': 'Configuración'
+            };
+            document.getElementById('breadcrumb-current').textContent = names[sectionId] || sectionId;
+            setTimeout(() => lucide.createIcons(), 50);
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        }
+
+        function toggleEndpoint(element) {
+            const details = element.querySelector('.hidden, .block');
+            const chevron = element.querySelector('[data-lucide="chevron-down"]');
+            if (details.classList.contains('hidden')) {
+                details.classList.remove('hidden');
+                details.classList.add('block');
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            } else {
+                details.classList.add('hidden');
+                details.classList.remove('block');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function filterApi(tag) {
+            document.querySelectorAll('.api-tab').forEach(tab => {
+                tab.classList.remove('tab-active', 'text-white');
+                tab.classList.add('text-ocean-400');
+                if (tab.dataset.tag === tag) {
+                    tab.classList.add('tab-active', 'text-white');
+                    tab.classList.remove('text-ocean-400');
+                }
+            });
+            document.querySelectorAll('.api-group').forEach(group => {
+                group.style.display = (tag === 'all' || group.dataset.tag === tag) ? 'block' : 'none';
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.glass, .endpoint-row, button');
+            if (!target) return;
+            const rect = target.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+            target.style.position = 'relative';
+            target.style.overflow = 'hidden';
+            target.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        });
+
+        let lastDroplet = 0;
+        document.addEventListener('mousemove', function(e) {
+            const now = Date.now();
+            if (now - lastDroplet < 50) return;
+            lastDroplet = now;
+            const droplet = document.createElement('div');
+            droplet.className = 'droplet';
+            droplet.style.left = e.clientX + 'px';
+            droplet.style.top = e.clientY + 'px';
+            document.body.appendChild(droplet);
+            setTimeout(() => droplet.remove(), 1000);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('consumptionChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Consumo (m³)',
+                            data: [3200, 2800, 3500, 3100, 2900, 3400],
+                            borderColor: '#22d3ee',
+                            backgroundColor: 'rgba(34, 211, 238, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#0ea5e9',
+                            pointBorderColor: '#22d3ee',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: 'rgba(14, 165, 233, 0.05)' }, ticks: { color: '#475569' } },
+                            y: { grid: { color: 'rgba(14, 165, 233, 0.05)' }, ticks: { color: '#475569' } }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
