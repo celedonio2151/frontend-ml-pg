@@ -1,22 +1,33 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 type ThemeMode = 'light' | 'dark';
 
 type UIState = {
-  themeMode: ThemeMode;
   sidebarOpen: boolean;
+  themeMode: ThemeMode;
+  setThemeMode: (mode: ThemeMode) => void;
   toggleTheme: () => void;
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
+};
+
+const getPreferredThemeMode = (): ThemeMode => {
+  if (typeof window === 'undefined') {
+    return 'dark';
+  }
+
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 };
 
 export const useUIStore = create<UIState>()(
   devtools(
     persist(
       (set) => ({
-        themeMode: 'light',
         sidebarOpen: true,
+        themeMode: getPreferredThemeMode(),
+
+        setThemeMode: (mode) => set({ themeMode: mode }, false, 'ui/setThemeMode'),
 
         toggleTheme: () =>
           set(
@@ -31,7 +42,14 @@ export const useUIStore = create<UIState>()(
 
         toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen }), false, 'ui/toggleSidebar'),
       }),
-      { name: 'ui-store' },
+      {
+        name: 'aqua-admin-ui',
+        partialize: (state) => ({
+          sidebarOpen: state.sidebarOpen,
+          themeMode: state.themeMode,
+        }),
+        storage: createJSONStorage(() => localStorage),
+      },
     ),
     { name: 'UI Store' },
   ),

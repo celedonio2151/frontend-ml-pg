@@ -1,62 +1,37 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
-import { Breakpoint, Theme } from '@mui/material';
-import { useMediaQuery } from '@mui/material';
+import { useMemo, type PropsWithChildren } from 'react';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme, type Breakpoint } from '@mui/material/styles';
+import { BreakpointContext, type BreakpointContextInterface } from 'providers/breakpoints';
 
-interface BreakpointContextInterface {
-  currentBreakpoint: Breakpoint;
-  up: (key: Breakpoint | number) => boolean;
-  down: (key: Breakpoint | number) => boolean;
-  only: (key: Breakpoint | number) => boolean;
-  between: (start: Breakpoint | number, end: Breakpoint | number) => boolean;
-}
-
-export const BreakpointContext = createContext({} as BreakpointContextInterface);
+const getViewportWidth = () => (typeof window === 'undefined' ? 0 : window.innerWidth);
 
 const BreakpointsProvider = ({ children }: PropsWithChildren) => {
-  const [currentBreakpoint, setCurrentBreakpoint] = useState<Breakpoint>('xs');
-  const up = (key: Breakpoint | number) =>
-    useMediaQuery<Theme>((theme) => theme.breakpoints.up(key));
+  const theme = useTheme();
 
-  const down = (key: Breakpoint | number) =>
-    useMediaQuery<Theme>((theme) => theme.breakpoints.down(key));
+  const isSmUp = useMediaQuery(theme.breakpoints.up('sm'));
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const isLgUp = useMediaQuery(theme.breakpoints.up('lg'));
+  const isXlUp = useMediaQuery(theme.breakpoints.up('xl'));
 
-  const only = (key: Breakpoint | number) =>
-    useMediaQuery<Theme>((theme) => theme.breakpoints.only(key as Breakpoint));
+  const currentBreakpoint: Breakpoint = isXlUp ? 'xl' : isLgUp ? 'lg' : isMdUp ? 'md' : isSmUp ? 'sm' : 'xs';
 
-  const between = (start: Breakpoint | number, end: Breakpoint | number) =>
-    useMediaQuery<Theme>((theme) => theme.breakpoints.between(start, end));
+  const value = useMemo<BreakpointContextInterface>(() => {
+    const getBreakpointValue = (key: Breakpoint | number) =>
+      typeof key === 'number' ? key : theme.breakpoints.values[key];
 
-  const isXs = between('xs', 'sm');
-  const isSm = between('sm', 'md');
-  const isMd = between('md', 'lg');
-  const isLg = between('lg', 'xl');
-  const isXl = up('xl');
+    return {
+      currentBreakpoint,
+      up: (key) => getViewportWidth() >= getBreakpointValue(key),
+      down: (key) => getViewportWidth() < getBreakpointValue(key),
+      only: (key) => (typeof key === 'number' ? getViewportWidth() === key : currentBreakpoint === key),
+      between: (start, end) => {
+        const width = getViewportWidth();
+        return width >= getBreakpointValue(start) && width < getBreakpointValue(end);
+      },
+    };
+  }, [currentBreakpoint, theme.breakpoints.values]);
 
-  useEffect(() => {
-    if (isXs) {
-      setCurrentBreakpoint('xs');
-    }
-    if (isSm) {
-      setCurrentBreakpoint('sm');
-    }
-    if (isMd) {
-      setCurrentBreakpoint('md');
-    }
-    if (isLg) {
-      setCurrentBreakpoint('lg');
-    }
-    if (isXl) {
-      setCurrentBreakpoint('xl');
-    }
-  }, [isXs, isSm, isMd, isLg, isXl]);
-
-  return (
-    <BreakpointContext.Provider value={{ currentBreakpoint, up, down, only, between }}>
-      {children}
-    </BreakpointContext.Provider>
-  );
+  return <BreakpointContext.Provider value={value}>{children}</BreakpointContext.Provider>;
 };
-
-export const useBreakpoints = () => useContext(BreakpointContext);
 
 export default BreakpointsProvider;
