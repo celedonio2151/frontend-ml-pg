@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
       tsconfigPaths: true,
     },
     server: {
-      port: parseInt(env.VITE_PORT) || 3000,
+      port: parseInt(env.VITE_PORT) || 3002,
       allowedHosts: ['localhost'],
     },
   };
