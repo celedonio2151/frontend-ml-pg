@@ -1,16 +1,17 @@
 /* eslint-disable react-refresh/only-export-components */
-import { Box, Skeleton } from '@mui/material';
+import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
 import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router';
 
 import AuthGuard from 'modules/auth/guards/AuthGuard';
 import RoleGuard from 'modules/auth/guards/RoleGuard';
-import WaterSystemShowcasePage from 'modules/public/pages/WaterSystemShowcasePage';
 import { RoleName } from 'modules/roles/types/role.types';
 // import GuestGuard from 'modules/auth/guards/GuestGuard';
 import MainLayout from 'layouts/main-layout';
 import paths from 'router/paths';
 
+const WaterSystemShowcasePage = lazy(() => import('modules/public/pages/WaterSystemShowcasePage'));
 const DashboardPage = lazy(() => import('modules/dashboard/pages/DashBoardPage'));
 const UserPage = lazy(() => import('modules/users/pages/UserPage'));
 const RolPage = lazy(() => import('modules/roles/pages/RolePage'));

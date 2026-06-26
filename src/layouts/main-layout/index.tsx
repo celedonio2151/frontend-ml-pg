@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { useState, type PropsWithChildren } from 'react';
+import { useState } from 'react';
 import { Outlet } from 'react-router';
 
 import { useUIStore } from 'shared/stores/ui.store';
@@ -77,7 +77,7 @@ function LayoutBubbles() {
   );
 }
 
-function MainLayout({ children }: PropsWithChildren) {
+function MainLayout() {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -146,7 +146,6 @@ function MainLayout({ children }: PropsWithChildren) {
             pt: `calc(${topbarHeight}px + 24px)`,
           }}
         >
-          {/* {children} */}
           <Outlet />
         </Box>
         <Footer />

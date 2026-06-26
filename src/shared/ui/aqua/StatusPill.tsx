@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import type { ChipProps } from '@mui/material/Chip';
 import type { SxProps, Theme } from '@mui/material/styles';
 
-type StatusTone = 'aqua' | 'success' | 'warning' | 'error' | 'neutral' | 'purple';
+export type StatusTone = 'aqua' | 'success' | 'warning' | 'error' | 'neutral' | 'purple';
 
 type StatusPillProps = Omit<ChipProps, 'color' | 'label'> & {
   label: ReactNode;
@@ -54,6 +54,11 @@ const dotStyles: Record<string, SxProps<Theme>> = {
     position: 'relative',
   },
   pulse: {
+    width: 7,
+    height: 7,
+    borderRadius: '50%',
+    backgroundColor: 'currentColor',
+    position: 'relative',
     '&::after': {
       content: '""',
       position: 'absolute',
@@ -67,31 +72,12 @@ const dotStyles: Record<string, SxProps<Theme>> = {
 };
 
 function StatusPill({ label, pulse = false, tone = 'aqua', sx, ...props }: StatusPillProps) {
-  const dotSx = pulse
-    ? {
-        width: 7,
-        height: 7,
-        borderRadius: '50%',
-        backgroundColor: 'currentColor',
-        position: 'relative',
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          inset: -4,
-          borderRadius: 'inherit',
-          border: '1px solid currentColor',
-          opacity: 0.55,
-          animation: 'aquaPulseRing 1.8s ease-out infinite',
-        },
-      }
-    : dotStyles.root;
-
   return (
     <Chip
       size="small"
       variant="outlined"
       label={label}
-      icon={<Box component="span" sx={dotSx} />}
+      icon={<Box component="span" sx={pulse ? dotStyles.pulse : dotStyles.root} />}
       sx={[
         {
           height: 26,

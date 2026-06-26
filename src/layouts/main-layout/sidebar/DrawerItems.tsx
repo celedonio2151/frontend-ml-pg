@@ -19,6 +19,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { Link } from 'react-router';
 import paths from 'router/paths';
 
 type DrawerItemsProps = {
@@ -47,6 +48,8 @@ const navSections: NavSection[] = [
       { label: 'Medidores', href: paths.admin.meters, icon: SpeedRounded },
       { label: 'Lecturas', href: paths.admin.readings, icon: WaterDropRounded, badge: '23' },
       { label: 'Facturas', href: paths.admin.invoices, icon: ReceiptLongRounded },
+      { label: 'Gastos', href: paths.admin.expenses, icon: ReceiptLongRounded },
+      { label: 'Tesoreria', href: paths.admin.treasury, icon: ReceiptLongRounded },
     ],
   },
   {
@@ -207,8 +210,8 @@ function DrawerItems({ expanded, onNavigate }: DrawerItemsProps) {
                       title={item.label}
                     >
                       <ListItemButton
-                        component="a"
-                        href={item.href}
+                        component={Link}
+                        to={item.href}
                         onClick={onNavigate}
                         selected={selected}
                         sx={{

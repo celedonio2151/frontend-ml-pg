@@ -7,9 +7,9 @@ import type { SxProps, Theme } from '@mui/material/styles';
 import AquaPanel from 'shared/ui/aqua/AquaPanel';
 import StatusPill from 'shared/ui/aqua/StatusPill';
 
-type MetricTone = 'aqua' | 'success' | 'warning' | 'error' | 'purple';
+export type MetricTone = 'aqua' | 'success' | 'warning' | 'error' | 'purple';
 
-type MetricCardProps = {
+export type MetricCardProps = {
   change: string;
   icon: ReactNode;
   label: string;
