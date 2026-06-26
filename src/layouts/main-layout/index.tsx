@@ -1,9 +1,11 @@
-import { useState, type PropsWithChildren } from 'react';
 import Box from '@mui/material/Box';
+import { useState, type PropsWithChildren } from 'react';
+import { Outlet } from 'react-router';
+
+import { useUIStore } from 'shared/stores/ui.store';
+import Footer from './footer';
 import Sidebar from './sidebar';
 import Topbar from './topbar';
-import Footer from './footer';
-import { useUIStore } from 'shared/stores/ui.store';
 
 const drawerWidth = 288;
 const miniDrawerWidth = 86;
@@ -27,9 +29,7 @@ function LayoutBubbles() {
           height: 520,
           borderRadius: '50%',
           background: (theme) =>
-            theme.palette.mode === 'dark'
-              ? 'rgba(14, 165, 233, 0.08)'
-              : 'rgba(14, 165, 233, 0.16)',
+            theme.palette.mode === 'dark' ? 'rgba(14, 165, 233, 0.08)' : 'rgba(14, 165, 233, 0.16)',
           content: '""',
           filter: 'blur(92px)',
         },
@@ -41,9 +41,7 @@ function LayoutBubbles() {
           height: 620,
           borderRadius: '50%',
           background: (theme) =>
-            theme.palette.mode === 'dark'
-              ? 'rgba(6, 182, 212, 0.07)'
-              : 'rgba(6, 182, 212, 0.14)',
+            theme.palette.mode === 'dark' ? 'rgba(6, 182, 212, 0.07)' : 'rgba(6, 182, 212, 0.14)',
           content: '""',
           filter: 'blur(116px)',
         },
@@ -148,7 +146,8 @@ function MainLayout({ children }: PropsWithChildren) {
             pt: `calc(${topbarHeight}px + 24px)`,
           }}
         >
-          {children}
+          {/* {children} */}
+          <Outlet />
         </Box>
         <Footer />
       </Box>

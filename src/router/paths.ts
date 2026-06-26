@@ -1,5 +1,3 @@
-import type { users } from 'modules/public/data/waterShowcaseData';
-
 export const rootPaths = {
   root: '/',
   pageRoot: '/pages',
@@ -20,9 +18,13 @@ export default {
     root: `${rootPaths.pageRoot}/admin`,
     dashboard: `${rootPaths.pageRoot}/admin/dashboard`,
     users: `${rootPaths.pageRoot}/admin/users`,
+    roles: `${rootPaths.pageRoot}/admin/roles`,
     meters: `${rootPaths.pageRoot}/admin/meters`,
     readings: `${rootPaths.pageRoot}/admin/readings`,
     invoices: `${rootPaths.pageRoot}/admin/invoices`,
+    treasury: `${rootPaths.pageRoot}/admin/treasury`,
+    expenses: `${rootPaths.pageRoot}/admin/expenses`,
+    settings: `${rootPaths.pageRoot}/admin/settings`,
     apidocs: `${rootPaths.pageRoot}/admin/api-docs`,
   },
 
