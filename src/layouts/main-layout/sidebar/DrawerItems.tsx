@@ -1,5 +1,14 @@
-import Box from '@mui/material/Box';
+import ApiRounded from '@mui/icons-material/ApiRounded';
+import DashboardRounded from '@mui/icons-material/DashboardRounded';
+import GroupsRounded from '@mui/icons-material/GroupsRounded';
+import PeopleAltRounded from '@mui/icons-material/PeopleAltRounded';
+import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
+import SettingsRounded from '@mui/icons-material/SettingsRounded';
+import ShieldRounded from '@mui/icons-material/ShieldRounded';
+import SpeedRounded from '@mui/icons-material/SpeedRounded';
+import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
 import Badge from '@mui/material/Badge';
+import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
@@ -10,15 +19,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import ApiRounded from '@mui/icons-material/ApiRounded';
-import DashboardRounded from '@mui/icons-material/DashboardRounded';
-import GroupsRounded from '@mui/icons-material/GroupsRounded';
-import PeopleAltRounded from '@mui/icons-material/PeopleAltRounded';
-import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
-import SettingsRounded from '@mui/icons-material/SettingsRounded';
-import ShieldRounded from '@mui/icons-material/ShieldRounded';
-import SpeedRounded from '@mui/icons-material/SpeedRounded';
-import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
+import paths from 'router/paths';
 
 type DrawerItemsProps = {
   expanded: boolean;
@@ -41,20 +42,20 @@ const navSections: NavSection[] = [
   {
     title: 'Operacion',
     items: [
-      { label: 'Dashboard', href: '/', icon: DashboardRounded, badge: 'Live' },
-      { label: 'Usuarios', href: '#usuarios', icon: PeopleAltRounded },
-      { label: 'Medidores', href: '#medidores', icon: SpeedRounded },
-      { label: 'Lecturas', href: '#lecturas', icon: WaterDropRounded, badge: '23' },
-      { label: 'Facturas', href: '#facturas', icon: ReceiptLongRounded },
+      { label: 'Dashboard', href: paths.admin.dashboard, icon: DashboardRounded, badge: 'Live' },
+      { label: 'Usuarios', href: paths.admin.users, icon: PeopleAltRounded },
+      { label: 'Medidores', href: paths.admin.meters, icon: SpeedRounded },
+      { label: 'Lecturas', href: paths.admin.readings, icon: WaterDropRounded, badge: '23' },
+      { label: 'Facturas', href: paths.admin.invoices, icon: ReceiptLongRounded },
     ],
   },
   {
     title: 'Gestion',
     items: [
-      { label: 'Roles', href: '#roles', icon: ShieldRounded },
-      { label: 'Directiva', href: '#directiva', icon: GroupsRounded },
-      { label: 'API Docs', href: '#api-docs', icon: ApiRounded },
-      { label: 'Configuracion', href: '#configuracion', icon: SettingsRounded },
+      { label: 'Roles', href: paths.admin.roles, icon: ShieldRounded },
+      { label: 'Directiva', href: paths.admin.directiva, icon: GroupsRounded },
+      { label: 'API Docs', href: paths.admin.apidocs, icon: ApiRounded },
+      { label: 'Configuracion', href: paths.admin.settings, icon: SettingsRounded },
     ],
   },
 ];
@@ -128,9 +129,7 @@ function DrawerItems({ expanded, onNavigate }: DrawerItemsProps) {
           p: expanded ? 1.5 : 1,
           textAlign: expanded ? 'left' : 'center',
           background: (theme) =>
-            theme.palette.mode === 'dark'
-              ? 'rgba(6, 182, 212, 0.08)'
-              : 'rgba(14, 165, 233, 0.10)',
+            theme.palette.mode === 'dark' ? 'rgba(6, 182, 212, 0.08)' : 'rgba(14, 165, 233, 0.10)',
           border: (theme) =>
             `1px solid ${
               theme.palette.mode === 'dark'
@@ -180,7 +179,13 @@ function DrawerItems({ expanded, onNavigate }: DrawerItemsProps) {
               <Typography
                 color="text.secondary"
                 variant="caption"
-                sx={{ display: 'block', fontWeight: 800, mb: 1, px: 1.5, textTransform: 'uppercase' }}
+                sx={{
+                  display: 'block',
+                  fontWeight: 800,
+                  mb: 1,
+                  px: 1.5,
+                  textTransform: 'uppercase',
+                }}
               >
                 {section.title}
               </Typography>
@@ -195,7 +200,12 @@ function DrawerItems({ expanded, onNavigate }: DrawerItemsProps) {
 
                 return (
                   <ListItem key={item.label} disablePadding sx={{ mb: 0.5 }}>
-                    <Tooltip arrow disableHoverListener={expanded} placement="right" title={item.label}>
+                    <Tooltip
+                      arrow
+                      disableHoverListener={expanded}
+                      placement="right"
+                      title={item.label}
+                    >
                       <ListItemButton
                         component="a"
                         href={item.href}
@@ -272,8 +282,7 @@ function DrawerItems({ expanded, onNavigate }: DrawerItemsProps) {
           overflow: 'hidden',
           p: 2,
           position: 'relative',
-          background:
-            'linear-gradient(135deg, rgba(34, 211, 238, 0.16), rgba(14, 165, 233, 0.06))',
+          background: 'linear-gradient(135deg, rgba(34, 211, 238, 0.16), rgba(14, 165, 233, 0.06))',
           border: '1px solid rgba(125, 211, 252, 0.14)',
         }}
       >

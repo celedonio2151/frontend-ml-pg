@@ -20,6 +20,8 @@ const InvoicePage = lazy(() => import('modules/invoices/pages/InvoicePage'));
 const TreasuryPage = lazy(() => import('modules/treasury/pages/TreasuryPage'));
 const ExpensePage = lazy(() => import('modules/expenses/pages/ExpensePage'));
 const SettingPage = lazy(() => import('modules/settings/pages/SettingsPage'));
+const ApiDocsPage = lazy(() => import('modules/apidocs/pages/ApiDocsPage'));
+const DirectivaPage = lazy(() => import('modules/directiva/pages/DirectivaPage'));
 
 const PageSkeleton = () => (
   <Box sx={{ p: 3 }}>
@@ -117,6 +119,22 @@ export const adminRoutes: RouteObject[] = [
                 element: (
                   <Suspense fallback={<PageSkeleton />}>
                     <SettingPage />
+                  </Suspense>
+                ),
+              },
+              {
+                path: paths.admin.apidocs,
+                element: (
+                  <Suspense fallback={<PageSkeleton />}>
+                    <ApiDocsPage />
+                  </Suspense>
+                ),
+              },
+              {
+                path: paths.admin.directiva,
+                element: (
+                  <Suspense fallback={<PageSkeleton />}>
+                    <DirectivaPage />
                   </Suspense>
                 ),
               },
