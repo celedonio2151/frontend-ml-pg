@@ -1,12 +1,12 @@
-import React from 'react';
-import type { Table as ReactTable } from '@tanstack/react-table';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import Select, { type SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import type { Table as ReactTable } from '@tanstack/react-table';
+import React from 'react';
 
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
@@ -33,7 +33,7 @@ export interface DataTablePaginationProps<TData> {
 export function DataTablePagination<TData>(props: DataTablePaginationProps<TData>) {
   const {
     table,
-    rowsPerPageOptions = [5, 10, 25, 50],
+    rowsPerPageOptions = [5, 12, 25, 50],
     rowsLabel = 'registros',
     showAllOption = true,
   } = props;
@@ -57,14 +57,13 @@ export function DataTablePagination<TData>(props: DataTablePaginationProps<TData
     [currentPage, totalPages],
   );
 
-  const handleRowsPerPageChange = (event: SelectChangeEvent<number>) => {
-    const value = event.target.value as number | 'all';
+  const handleRowsPerPageChange = (event: { target: { value: string } }) => {
+    const value = event.target.value;
     const size = value === 'all' ? totalRows : Number(value);
     table.setPageSize(size);
   };
 
-  const rowsPerPageValue: number | 'all' =
-    pageSize >= totalRows && showAllOption ? 'all' : pageSize;
+  const rowsPerPageValue = pageSize >= totalRows && showAllOption ? 'all' : String(pageSize);
 
   return (
     <Box
@@ -77,7 +76,7 @@ export function DataTablePagination<TData>(props: DataTablePaginationProps<TData
         px: 2,
         py: 1.5,
         borderTop: (t) => `1px solid ${t.palette.divider}`,
-        bgcolor: (t) =>
+        bgcolor: () =>
           theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
       }}
     >
@@ -107,7 +106,7 @@ export function DataTablePagination<TData>(props: DataTablePaginationProps<TData
             inputProps={{ 'aria-label': 'filas por página' }}
           >
             {rowsPerPageOptions.map((opt) => (
-              <MenuItem key={opt} value={opt}>
+              <MenuItem key={opt} value={String(opt)}>
                 {opt}
               </MenuItem>
             ))}
@@ -255,7 +254,7 @@ type PageToken = number | '…';
  *   1 / 10 → [1, 2, 3, '…', 10]
  *  10 / 10 → [1, '…', 8, 9, 10]
  */
-export function buildPageRange(currentPage: number, totalPages: number): PageToken[] {
+function buildPageRange(currentPage: number, totalPages: number): PageToken[] {
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }

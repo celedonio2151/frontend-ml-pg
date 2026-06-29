@@ -1,48 +1,37 @@
-import { faker } from '@faker-js/faker'
-
 export type Person = {
-  firstName: string
-  lastName: string
-  age: number
-  visits: number
-  progress: number
-  status: 'relationship' | 'complicated' | 'single'
-  subRows?: Person[]
-}
+  age: number;
+  firstName: string;
+  lastName: string;
+  progress: number;
+  status: 'complicated' | 'relationship' | 'single';
+  subRows?: Person[];
+  visits: number;
+};
 
-const range = (len: number) => {
-  const arr: number[] = []
-  for (let i = 0; i < len; i++) {
-    arr.push(i)
-  }
-  return arr
-}
+const firstNames = ['Ana', 'Carlos', 'Daniela', 'Elena', 'Juan', 'Luis', 'Maria', 'Pedro', 'Rosa', 'Valeria'];
+const lastNames = ['Fernandez', 'Garcia', 'Gomez', 'Lopez', 'Martinez', 'Mendoza', 'Perez', 'Rojas', 'Ruiz', 'Vargas'];
+const statuses: Person['status'][] = ['single', 'relationship', 'complicated'];
 
-const newPerson = (): Person => {
-  return {
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName(),
-    age: faker.number.int(40),
-    visits: faker.number.int(1000),
-    progress: faker.number.int(100),
-    status: faker.helpers.shuffle<Person['status']>([
-      'relationship',
-      'complicated',
-      'single',
-    ])[0]!,
-  }
-}
+const range = (length: number) => Array.from({ length }, (_, index) => index);
+
+const newPerson = (index: number): Person => ({
+  age: 18 + (index % 52),
+  firstName: firstNames[index % firstNames.length],
+  lastName: lastNames[(index * 7) % lastNames.length],
+  progress: (index * 13) % 101,
+  status: statuses[index % statuses.length],
+  visits: 80 + ((index * 37) % 3400),
+});
 
 export function makeData(...lens: number[]) {
-  const makeDataLevel = (depth = 0): Person[] => {
-    const len = lens[depth]!
-    return range(len).map((_d: number): Person => {
-      return {
-        ...newPerson(),
-        subRows: lens[depth + 1] ? makeDataLevel(depth + 1) : undefined,
-      }
-    })
-  }
+  const makeDataLevel = (depth = 0, offset = 0): Person[] => {
+    const length = lens[depth] ?? 0;
 
-  return makeDataLevel()
+    return range(length).map((index): Person => ({
+      ...newPerson(offset + index),
+      subRows: lens[depth + 1] ? makeDataLevel(depth + 1, offset + index * 10) : undefined,
+    }));
+  };
+
+  return makeDataLevel();
 }

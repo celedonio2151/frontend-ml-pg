@@ -12,8 +12,14 @@ import DownloadIcon from '@mui/icons-material/Download';
 import { DataTable } from './DataTable';
 import { makeData, type Person } from './makeData';
 
+const personStatusFilterOptions = [
+  { label: 'Single', value: 'single' },
+  { label: 'Relationship', value: 'relationship' },
+  { label: 'Complicated', value: 'complicated' },
+];
+
 export default function ExampleUsage() {
-  const [data, setData] = React.useState<Person[]>(() => makeData(10_000));
+  const data = React.useMemo<Person[]>(() => makeData(10_000), []);
 
   /* Strongly-typed column definitions. */
   const columns = React.useMemo<ColumnDef<Person, unknown>[]>(
@@ -44,22 +50,30 @@ export default function ExampleUsage() {
           {
             accessorKey: 'age',
             header: 'Edad',
+            meta: { filterVariant: 'number' },
             footer: (props) => props.column.id,
           },
           {
             accessorKey: 'visits',
             header: 'Visitas',
+            meta: { filterVariant: 'number' },
             footer: (props) => props.column.id,
           },
           {
             accessorKey: 'status',
             header: 'Estado',
+            filterFn: 'equals',
+            meta: {
+              filterOptions: personStatusFilterOptions,
+              filterVariant: 'select',
+            },
             footer: (props) => props.column.id,
           },
           {
             accessorKey: 'progress',
             header: 'Progreso',
             cell: (info) => `${info.getValue()}%`,
+            meta: { filterVariant: 'number' },
             footer: (props) => props.column.id,
           },
         ],
@@ -76,8 +90,12 @@ export default function ExampleUsage() {
       rowsPerPageOptions={[5, 10, 25, 50]}
       rowsLabel="usuarios"
       ariaLabel="tabla de personas"
-      enableGlobalFilter
-      enableColumnFilters
+      title="Prueba de rendimiento"
+      subtitle={`${data.length.toLocaleString()} usuarios generados localmente`}
+      enableColumnFilters={true}
+      enableGlobalFilter={true}
+      showTitle={true}
+      showToolbar={true}
       toolbarRight={
         <Button
           variant="outlined"
