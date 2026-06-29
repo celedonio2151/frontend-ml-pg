@@ -19,7 +19,8 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
+
 import paths from 'router/paths';
 
 type DrawerItemsProps = {
@@ -63,16 +64,9 @@ const navSections: NavSection[] = [
   },
 ];
 
-const getCurrentPath = () => {
-  if (typeof window === 'undefined') {
-    return '/';
-  }
-
-  return window.location.pathname;
-};
-
 function DrawerItems({ expanded, onNavigate }: DrawerItemsProps) {
-  const currentPath = getCurrentPath();
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   return (
     <Stack sx={{ minHeight: '100%', px: 1.5, py: 2.5 }}>
@@ -199,7 +193,8 @@ function DrawerItems({ expanded, onNavigate }: DrawerItemsProps) {
             <List disablePadding>
               {section.items.map((item) => {
                 const Icon = item.icon;
-                const selected = item.href === '/' ? currentPath === '/' : false;
+                const selected =
+                  currentPath === item.href || currentPath.startsWith(`${item.href}/`);
 
                 return (
                   <ListItem key={item.label} disablePadding sx={{ mb: 0.5 }}>
