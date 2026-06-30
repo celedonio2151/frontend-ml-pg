@@ -15,6 +15,8 @@ import MenuRounded from '@mui/icons-material/MenuRounded';
 import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
+
+import IconifyIcon from 'components/base/IconifyIcon';
 import LanguageSelect from './LanguageSelect';
 import ProfileMenu from './ProfileMenu';
 import { useUIStore } from 'shared/stores/ui.store';
@@ -46,19 +48,13 @@ function Topbar({ drawerWidth, miniDrawerWidth, setMobileOpen, topbarHeight }: T
         right: 0,
         width: {
           xs: 1,
-          lg: sidebarOpen
-            ? `calc(100% - ${drawerWidth}px)`
-            : `calc(100% - ${miniDrawerWidth}px)`,
+          lg: sidebarOpen ? `calc(100% - ${drawerWidth}px)` : `calc(100% - ${miniDrawerWidth}px)`,
         },
         background:
-          theme.palette.mode === 'dark'
-            ? 'rgba(6, 13, 24, 0.72)'
-            : 'rgba(240, 249, 255, 0.76)',
+          theme.palette.mode === 'dark' ? 'rgba(6, 13, 24, 0.72)' : 'rgba(240, 249, 255, 0.76)',
         backdropFilter: 'blur(24px)',
         borderBottom: `1px solid ${
-          theme.palette.mode === 'dark'
-            ? 'rgba(125, 211, 252, 0.12)'
-            : 'rgba(2, 132, 199, 0.14)'
+          theme.palette.mode === 'dark' ? 'rgba(125, 211, 252, 0.12)' : 'rgba(2, 132, 199, 0.14)'
         }`,
         color: 'text.primary',
         boxShadow:
@@ -80,7 +76,11 @@ function Topbar({ drawerWidth, miniDrawerWidth, setMobileOpen, topbarHeight }: T
           px: { xs: 2, md: 3 },
         }}
       >
-        <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} sx={{ alignItems: 'center', minWidth: 0 }}>
+        <Stack
+          direction="row"
+          spacing={{ xs: 1, sm: 1.5 }}
+          sx={{ alignItems: 'center', minWidth: 0 }}
+        >
           <Tooltip title="Abrir menu">
             <IconButton
               aria-label="Abrir menu"
@@ -99,11 +99,17 @@ function Topbar({ drawerWidth, miniDrawerWidth, setMobileOpen, topbarHeight }: T
               onClick={toggleSidebar}
               sx={{ display: { xs: 'none', lg: 'inline-flex' } }}
             >
-              {sidebarOpen ? <MenuOpenRounded /> : <MenuRounded />}
+              <IconifyIcon
+                icon={sidebarOpen ? 'line-md:menu-fold-left' : 'line-md:menu-fold-right'}
+              />
             </IconButton>
           </Tooltip>
 
-          <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', display: { xs: 'none', sm: 'flex' } }}>
+          <Stack
+            direction="row"
+            spacing={1.25}
+            sx={{ alignItems: 'center', display: { xs: 'none', sm: 'flex' } }}
+          >
             <Box
               sx={{
                 width: 38,
