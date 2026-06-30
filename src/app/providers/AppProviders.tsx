@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, type PropsWithChildren } from 'react';
+import { useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -9,6 +10,18 @@ import { getThemeOptions } from 'theme';
 function AppProviders({ children }: PropsWithChildren) {
   const mode = useUIStore((state) => state.themeMode);
   const appTheme = useMemo(() => createTheme(getThemeOptions(mode)), [mode]);
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+            retry: 1,
+            staleTime: 30_000,
+          },
+        },
+      }),
+  );
   const lastSparkRef = useRef(0);
 
   useEffect(() => {
@@ -81,12 +94,14 @@ function AppProviders({ children }: PropsWithChildren) {
   }, []);
 
   return (
-    <ThemeProvider theme={appTheme}>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <CssBaseline />
-        {children}
-      </LocalizationProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={appTheme}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <CssBaseline />
+          {children}
+        </LocalizationProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

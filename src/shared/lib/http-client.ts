@@ -1,5 +1,5 @@
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios';
-// import { useAuthStore } from 'shared/stores/auth.store';
+import { useAuthStore } from 'modules/auth/stores/auth.store';
 import { env } from 'shared/config/env';
 import { ApiError, type ApiErrorResponse } from 'shared/lib/api-error';
 import type { ApiResponse } from 'shared/types/api-reponse';
@@ -14,10 +14,12 @@ export const httpClient = axios.create({
 });
 
 httpClient.interceptors.request.use((config) => {
-  // const { tokens } = useAuthStore.getState();
-  // if (tokens?.accessToken) {
-  //   config.headers.Authorization = `Bearer ${tokens.accessToken}`;
-  // }
+  const { tokens } = useAuthStore.getState();
+
+  if (tokens?.accessToken) {
+    config.headers.Authorization = `Bearer ${tokens.accessToken}`;
+  }
+
   return config;
 });
 
@@ -30,9 +32,9 @@ httpClient.interceptors.response.use(
     if (error.response?.data) {
       const apiError = new ApiError(error.response.data);
 
-      // if (apiError.isUnauthorized) {
-      //   useAuthStore.getState().clearSession();
-      // }
+      if (apiError.isUnauthorized) {
+        useAuthStore.getState().clearSession();
+      }
 
       throw apiError;
     }

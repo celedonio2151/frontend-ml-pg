@@ -13,6 +13,9 @@ import HelpOutlineRounded from '@mui/icons-material/HelpOutlineRounded';
 import LogoutRounded from '@mui/icons-material/LogoutRounded';
 import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import SettingsRounded from '@mui/icons-material/SettingsRounded';
+import { useAuthStore } from 'modules/auth/stores/auth.store';
+import { useNavigate } from 'react-router';
+import paths from 'router/paths';
 
 type ProfileAction = {
   danger?: boolean;
@@ -30,7 +33,11 @@ const profileActions: ProfileAction[] = [
 
 function ProfileMenu() {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const user = useAuthStore((state) => state.user);
+  const clearSession = useAuthStore((state) => state.clearSession);
+  const navigate = useNavigate();
   const open = Boolean(anchorEl);
+  const initials = `${user?.name?.at(0) ?? 'A'}${user?.surname?.at(0) ?? 'P'}`.toUpperCase();
 
   const handleOpen = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -38,6 +45,12 @@ function ProfileMenu() {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    handleClose();
+    clearSession();
+    navigate(paths.auth.signin, { replace: true });
   };
 
   return (
@@ -74,7 +87,7 @@ function ProfileMenu() {
             fontWeight: 900,
           }}
         >
-          AP
+          {initials}
         </Avatar>
       </ButtonBase>
 
@@ -93,14 +106,14 @@ function ProfileMenu() {
         <Box sx={{ p: 1 }}>
           <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', px: 1, py: 1.25 }}>
             <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 900 }}>
-              AP
+              {initials}
             </Avatar>
             <Box sx={{ minWidth: 0 }}>
               <Typography noWrap variant="body2" sx={{ fontWeight: 900 }}>
-                Admin Principal
+                {user ? `${user.name} ${user.surname}` : 'Admin Principal'}
               </Typography>
               <Typography noWrap color="text.secondary" variant="caption">
-                admin@aqua.system
+                {user?.email ?? 'admin@aqua.system'}
               </Typography>
             </Box>
           </Stack>
@@ -115,7 +128,7 @@ function ProfileMenu() {
             return (
               <MenuItem
                 key={item.label}
-                onClick={handleClose}
+                onClick={item.danger ? handleLogout : handleClose}
                 sx={{
                   borderRadius: 1.5,
                   color: item.danger ? 'error.main' : 'text.primary',

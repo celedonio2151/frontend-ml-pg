@@ -284,6 +284,8 @@ export function DataTable<TData extends RowData>({
     }
   }, [enableGlobalFilter]);
 
+  // TanStack Table intentionally returns non-memoizable APIs.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable<TData>({
     columns,
     data,

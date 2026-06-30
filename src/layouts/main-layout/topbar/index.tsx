@@ -10,7 +10,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import DarkModeRounded from '@mui/icons-material/DarkModeRounded';
 import LightModeRounded from '@mui/icons-material/LightModeRounded';
-import MenuOpenRounded from '@mui/icons-material/MenuOpenRounded';
 import MenuRounded from '@mui/icons-material/MenuRounded';
 import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import SearchRounded from '@mui/icons-material/SearchRounded';
