@@ -27,7 +27,7 @@ export function useSignOut() {
   return useMutation({
     mutationFn: authService.logout,
     onSuccess: () => {
-      useAuthStore((state) => state.clearSession);
+      useAuthStore.getState().clearSession();
     },
   });
 }
@@ -36,7 +36,7 @@ export function useLogoutAll() {
   return useMutation({
     mutationFn: authService.logoutAll,
     onSuccess: () => {
-      useAuthStore((state) => state.clearSession);
+      useAuthStore.getState().clearSession();
     },
   });
 }

@@ -1,10 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import BadgeRounded from '@mui/icons-material/BadgeRounded';
+import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
+import EmailRounded from '@mui/icons-material/EmailRounded';
+import PersonRounded from '@mui/icons-material/PersonRounded';
+import PhoneRounded from '@mui/icons-material/PhoneRounded';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { useEffect, useState } from 'react';
@@ -138,7 +144,16 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
               fullWidth
               helperText={errors.name?.message}
               label="Nombre"
-              slotProps={{ input: { readOnly: isEditMode } }}
+              slotProps={{
+                input: {
+                  readOnly: isEditMode,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
               {...register('name')}
             />
             <TextField
@@ -146,7 +161,16 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
               fullWidth
               helperText={errors.surname?.message}
               label="Apellido"
-              slotProps={{ input: { readOnly: isEditMode } }}
+              slotProps={{
+                input: {
+                  readOnly: isEditMode,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
               {...register('surname')}
             />
           </Stack>
@@ -156,7 +180,16 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
             fullWidth
             helperText={errors.ci?.message}
             label="Cedula"
-            slotProps={{ input: { readOnly: isEditMode } }}
+            slotProps={{
+              input: {
+                readOnly: isEditMode,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <BadgeRounded fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
             {...register('ci')}
           />
 
@@ -165,6 +198,15 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
             fullWidth
             helperText={errors.email?.message}
             label="Correo"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailRounded fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
             type="email"
             {...register('email')}
           />
@@ -175,6 +217,15 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
               fullWidth
               helperText={errors.phoneNumber?.message}
               label="Telefono"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PhoneRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
               {...register('phoneNumber')}
             />
             <TextField
@@ -183,7 +234,16 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
               helperText={errors.birthDate?.message}
               label="Fecha de nacimiento"
               type="date"
-              slotProps={{ inputLabel: { shrink: true } }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CalendarMonthRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+                inputLabel: { shrink: true },
+              }}
               {...register('birthDate')}
             />
           </Stack>

@@ -32,7 +32,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.data) {
       const apiError = new ApiError(error.response.data);
 
-      if (apiError.isUnauthorized) {
+      if (apiError.isUnauthorized && useAuthStore.getState().tokens?.accessToken) {
         useAuthStore.getState().clearSession();
       }
 

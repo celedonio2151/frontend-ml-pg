@@ -1,8 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import EmailRounded from '@mui/icons-material/EmailRounded';
 import LockRounded from '@mui/icons-material/LockRounded';
+import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
+import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -26,6 +31,7 @@ export default function SingInPage() {
   const location = useLocation();
   const signInMutation = useSignInMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const locationState = location.state as (AuthLocationState & { registered?: boolean }) | null;
   const from = locationState?.from?.pathname ?? paths.admin.dashboard;
   const registered = Boolean(locationState?.registered);
@@ -44,6 +50,7 @@ export default function SingInPage() {
     resolver: zodResolver(signInSchema),
   });
 
+  // Handlers
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);
 
@@ -100,7 +107,9 @@ export default function SingInPage() {
           </Typography>
         </Stack>
 
-        {registered ? <Alert severity="success">Cuenta creada. Ya puedes iniciar sesion.</Alert> : null}
+        {registered ? (
+          <Alert severity="success">Cuenta creada. Ya puedes iniciar sesion.</Alert>
+        ) : null}
         {submitError ? <Alert severity="error">{submitError}</Alert> : null}
 
         <Stack spacing={2}>
@@ -110,6 +119,15 @@ export default function SingInPage() {
             fullWidth
             helperText={errors.email?.message}
             label="Correo"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailRounded fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
             type="email"
             {...register('email')}
           />
@@ -119,18 +137,48 @@ export default function SingInPage() {
             fullWidth
             helperText={errors.password?.message}
             label="Contrasena"
-            type="password"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockRounded fontSize="small" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+                      edge="end"
+                      onClick={() => setShowPassword((current) => !current)}
+                    >
+                      {showPassword ? <VisibilityOffRounded /> : <VisibilityRounded />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+            type={showPassword ? 'text' : 'password'}
             {...register('password')}
           />
         </Stack>
 
-        <Button disabled={signInMutation.isPending} fullWidth size="large" type="submit" variant="contained">
+        <Button
+          disabled={signInMutation.isPending}
+          fullWidth
+          size="large"
+          type="submit"
+          variant="contained"
+        >
           {signInMutation.isPending ? 'Entrando...' : 'Entrar'}
         </Button>
 
         <Typography color="text.secondary" variant="body2" sx={{ textAlign: 'center' }}>
           No tienes cuenta?{' '}
-          <Box component={Link} to={paths.auth.signup} sx={{ color: 'primary.light', fontWeight: 800 }}>
+          <Box
+            component={Link}
+            to={paths.auth.signup}
+            sx={{ color: 'primary.light', fontWeight: 800 }}
+          >
             Crear cuenta
           </Box>
         </Typography>

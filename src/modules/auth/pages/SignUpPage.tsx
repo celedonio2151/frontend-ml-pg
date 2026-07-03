@@ -1,8 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import BadgeRounded from '@mui/icons-material/BadgeRounded';
+import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
+import EmailRounded from '@mui/icons-material/EmailRounded';
+import LockRounded from '@mui/icons-material/LockRounded';
 import PersonAddAltRounded from '@mui/icons-material/PersonAddAltRounded';
+import PersonRounded from '@mui/icons-material/PersonRounded';
+import PhoneRounded from '@mui/icons-material/PhoneRounded';
+import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
+import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -19,6 +29,7 @@ export default function SignUpPage() {
   const navigate = useNavigate();
   const signUpMutation = useSignUpMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     formState: { errors },
@@ -110,6 +121,15 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.name?.message}
               label="Nombre"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
               {...register('name')}
             />
             <TextField
@@ -117,6 +137,15 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.surname?.message}
               label="Apellido"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
               {...register('surname')}
             />
           </Stack>
@@ -127,6 +156,15 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.ci?.message}
               label="Cedula"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <BadgeRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
               {...register('ci')}
             />
             <TextField
@@ -134,6 +172,15 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.phoneNumber?.message}
               label="Telefono"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PhoneRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
               {...register('phoneNumber')}
             />
           </Stack>
@@ -144,6 +191,15 @@ export default function SignUpPage() {
             fullWidth
             helperText={errors.email?.message}
             label="Correo"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailRounded fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
             type="email"
             {...register('email')}
           />
@@ -155,7 +211,27 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.password?.message}
               label="Contrasena"
-              type="password"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+                        edge="end"
+                        onClick={() => setShowPassword((current) => !current)}
+                      >
+                        {showPassword ? <VisibilityOffRounded /> : <VisibilityRounded />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              type={showPassword ? 'text' : 'password'}
               {...register('password')}
             />
             <TextField
@@ -164,7 +240,16 @@ export default function SignUpPage() {
               helperText={errors.birthDate?.message}
               label="Fecha de nacimiento"
               type="date"
-              slotProps={{ inputLabel: { shrink: true } }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CalendarMonthRounded fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+                inputLabel: { shrink: true },
+              }}
               {...register('birthDate')}
             />
           </Stack>

@@ -39,10 +39,7 @@ export type CreateUserDto = {
   surname: string;
 };
 
-export type UpdateUserDto = {
-  birthDate?: string;
-  email: string;
-  phoneNumber?: string;
+export type UpdateUserDto = Partial<Pick<CreateUserDto, 'birthDate' | 'email' | 'phoneNumber'>> & {
   rolIds?: string[];
 };
 
