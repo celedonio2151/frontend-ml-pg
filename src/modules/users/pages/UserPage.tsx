@@ -1,7 +1,5 @@
-import AddRounded from '@mui/icons-material/AddRounded';
-import DeleteRounded from '@mui/icons-material/DeleteRounded';
-import EditRounded from '@mui/icons-material/EditRounded';
-import RefreshRounded from '@mui/icons-material/RefreshRounded';
+import { useCallback, useMemo, useState } from 'react';
+
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -11,12 +9,18 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { ColumnDef, FilterFn } from '@tanstack/react-table';
-import { useCallback, useMemo, useState } from 'react';
+
+// MUI ICONS
+import AddRounded from '@mui/icons-material/AddRounded';
+import DeleteRounded from '@mui/icons-material/DeleteRounded';
+import EditRounded from '@mui/icons-material/EditRounded';
+import RefreshRounded from '@mui/icons-material/RefreshRounded';
+
 import DataTable from 'components/MainTable/DataTable';
 import DeleteUserDialog from 'modules/users/components/DeleteUserDialog';
 import UserFormDialog from 'modules/users/components/UserFormDialog';
 import { useUsers } from 'modules/users/hooks/useUsers';
-import type { User, UsersListParams } from 'modules/users/types/user.types';
+import type { User, UsersListParams, UserWithRolesAndMeters } from 'modules/users/types/user.types';
 import { RoleName } from 'modules/roles/types/role.types';
 import StatusPill from 'shared/ui/aqua/StatusPill';
 import type { StatusTone } from 'shared/ui/aqua/StatusPill';
@@ -41,7 +45,7 @@ const roleToneByName: Record<string, StatusTone> = {
   USER: 'aqua',
 };
 
-const userHasRoleFilter: FilterFn<User> = (row, _columnId, filterValue) => {
+const userHasRoleFilter: FilterFn<UserWithRolesAndMeters> = (row, _columnId, filterValue) => {
   if (!filterValue) {
     return true;
   }
@@ -49,7 +53,7 @@ const userHasRoleFilter: FilterFn<User> = (row, _columnId, filterValue) => {
   return row.original.roles.some((role) => normalizeRoleName(role.name) === filterValue);
 };
 
-const getUserInitials = (user: User) => {
+const getUserInitials = (user: UserWithRolesAndMeters) => {
   const first = user.name.at(0) ?? '';
   const second = user.surname.at(0) ?? '';
 
@@ -87,7 +91,7 @@ export default function UserPage() {
     setFormUser(null);
   }, []);
 
-  const columns = useMemo<ColumnDef<User, unknown>[]>(
+  const columns = useMemo<ColumnDef<UserWithRolesAndMeters, unknown>[]>(
     () => [
       {
         accessorFn: (row) => `${row.name} ${row.surname} ${row.email ?? ''}`,
@@ -233,14 +237,18 @@ export default function UserPage() {
   return (
     <Stack spacing={2.5}>
       {usersQuery.isError ? (
-        <Alert severity="error">{getApiErrorMessage(usersQuery.error, 'No se pudieron cargar usuarios')}</Alert>
+        <Alert severity="error">
+          {getApiErrorMessage(usersQuery.error, 'No se pudieron cargar usuarios')}
+        </Alert>
       ) : null}
 
-      <DataTable<User>
+      <DataTable<UserWithRolesAndMeters>
         ariaLabel="tabla de usuarios"
         columns={columns}
         data={users}
-        emptyMessage={usersQuery.isLoading ? 'Cargando usuarios...' : 'No hay usuarios para mostrar.'}
+        emptyMessage={
+          usersQuery.isLoading ? 'Cargando usuarios...' : 'No hay usuarios para mostrar.'
+        }
         initialPageSize={10}
         rowsLabel="usuarios"
         rowsPerPageOptions={[10, 25, 50, 100]}
@@ -265,8 +273,11 @@ export default function UserPage() {
       />
 
       <UserFormDialog onClose={handleCloseForm} open={formOpen} user={formUser} />
-      <DeleteUserDialog onClose={() => setDeleteUser(null)} open={Boolean(deleteUser)} user={deleteUser} />
+      <DeleteUserDialog
+        onClose={() => setDeleteUser(null)}
+        open={Boolean(deleteUser)}
+        user={deleteUser}
+      />
     </Stack>
   );
 }
-

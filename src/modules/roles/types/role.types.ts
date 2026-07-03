@@ -1,5 +1,3 @@
-import type { ApiResponse } from 'shared/types/api-reponse';
-import type { EntityStatusValue } from 'shared/types/shared-types';
 import { defineOptions } from 'shared/utils/define-options';
 
 export const RoleName = defineOptions([
@@ -31,10 +29,10 @@ export interface Role {
   id: string;
   createdAt: Date | string;
   updatedAt: Date | string;
-  role: string;
+  name: RoleType;
   description: string;
-  status: EntityStatusValue;
+  status: boolean;
 }
 
-export type RoleResponse = ApiResponse<Role>;
-export type RolesResponse = ApiResponse<Roles>;
+// export type RoleResponse = ApiResponse<Role>;
+// export type RolesResponse = ApiResponse<Roles>;

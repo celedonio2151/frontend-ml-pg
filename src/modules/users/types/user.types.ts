@@ -1,43 +1,33 @@
+import type { Meter } from 'modules/meters/types/meter.types';
+import type { Role } from 'modules/roles/types/role.types';
 import type { PaginatedData, SortParam } from 'shared/types/api-reponse';
 
 export type UserRoleName = 'ADMIN' | 'READER' | 'TECHNICAL' | 'TECHNICIAN' | 'USER' | string;
 
-export type UserRole = {
-  createdAt: string;
-  description: string;
-  id: string;
-  name: UserRoleName;
-  status: boolean;
-  updatedAt: string;
-};
-
-export type UserMeter = {
-  createdAt: string;
-  deletedAt: null | string;
-  id: string;
-  isDeleted: boolean;
-  maximumCapacity: number;
-  meterNumber: number;
-  status: boolean;
-  updatedAt: string;
-  userId: string;
-};
-
 export type User = {
-  authProvider: string;
-  birthDate?: string;
-  ci: string;
-  createdAt: string;
-  email?: string;
   id: string;
-  meters: UserMeter[];
-  name: string;
-  phoneNumber?: string;
-  profileImg?: string;
-  roles: UserRole[];
-  status: boolean;
-  surname: string;
+  createdAt: string;
   updatedAt: string;
+  ci: string;
+  name: string;
+  surname: string;
+  email?: string;
+  phoneNumber?: string;
+  birthDate?: string;
+  profileImg?: string;
+  status: boolean;
+};
+
+export type UserWithRoles = User & {
+  roles: Role[];
+};
+
+export type UserWithMeter = User & {
+  meters: Meter[];
+};
+
+export type UserWithRolesAndMeters = UserWithRoles & {
+  meters: Meter[];
 };
 
 export type CreateUserDto = {
@@ -63,5 +53,4 @@ export type UsersListParams = {
   sortBy?: SortParam[];
 };
 
-export type UsersList = PaginatedData<User>;
-
+export type UsersList = PaginatedData<UserWithRolesAndMeters>;

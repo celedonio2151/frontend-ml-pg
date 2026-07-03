@@ -1,4 +1,4 @@
-import type { User } from 'modules/users/types/user.types';
+import type { UserWithRolesAndMeters } from 'modules/users/types/user.types';
 
 export type AuthTokens = {
   accessToken: string;
@@ -22,6 +22,13 @@ export type SignUpDto = {
 
 export type SignInResponse = {
   tokens: AuthTokens;
-  user: User;
+  user: UserWithRolesAndMeters;
 };
 
+export type LogoutResponse = {
+  message: string;
+};
+
+export type LogoutAllResponse = {
+  message: string;
+};

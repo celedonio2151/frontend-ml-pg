@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 import type { AuthTokens } from 'modules/auth/types/auth.types';
-import type { User } from 'modules/users/types/user.types';
+import type { UserWithRoles } from 'modules/users/types/user.types';
 
 type AuthState = {
   clearSession: () => void;
-  setSession: (session: { tokens: AuthTokens; user: User }) => void;
+  setSession: (session: { tokens: AuthTokens; user: UserWithRoles }) => void;
   tokens: AuthTokens | null;
-  user: User | null;
+  user: UserWithRoles | null;
 };
 
 export const useAuthStore = create<AuthState>()(
@@ -34,4 +34,3 @@ export const useAuthStore = create<AuthState>()(
 );
 
 export const selectIsAuthenticated = (state: AuthState) => Boolean(state.tokens?.accessToken);
-

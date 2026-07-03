@@ -5,9 +5,7 @@ import paths from 'router/paths';
 export default function GuestGuard() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
 
-  if (isAuthenticated) {
-    return <Navigate replace to={paths.admin.dashboard} />;
-  }
+  if (isAuthenticated) return <Navigate replace to={paths.admin.dashboard} />;
 
   return <Outlet />;
 }

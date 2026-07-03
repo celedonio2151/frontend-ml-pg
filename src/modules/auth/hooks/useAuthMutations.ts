@@ -16,10 +16,27 @@ export function useSignInMutation() {
 export function useSignUpMutation() {
   return useMutation({
     mutationFn: authService.signUp,
+    onSuccess: (session) => {
+      alert('Usuario registrado con exito, por favor inicie sesion');
+      console.log('session', session);
+    },
   });
 }
 
 export function useSignOut() {
-  return useAuthStore((state) => state.clearSession);
+  return useMutation({
+    mutationFn: authService.logout,
+    onSuccess: () => {
+      useAuthStore((state) => state.clearSession);
+    },
+  });
 }
 
+export function useLogoutAll() {
+  return useMutation({
+    mutationFn: authService.logoutAll,
+    onSuccess: () => {
+      useAuthStore((state) => state.clearSession);
+    },
+  });
+}

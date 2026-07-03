@@ -4,7 +4,7 @@ import { env } from 'shared/config/env';
 import { ApiError, type ApiErrorResponse } from 'shared/lib/api-error';
 import type { ApiResponse } from 'shared/types/api-reponse';
 
-export const httpClient = axios.create({
+const axiosInstance = axios.create({
   baseURL: env.API_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -13,7 +13,7 @@ export const httpClient = axios.create({
   timeout: 30000,
 });
 
-httpClient.interceptors.request.use((config) => {
+axiosInstance.interceptors.request.use((config) => {
   const { tokens } = useAuthStore.getState();
 
   if (tokens?.accessToken) {
@@ -23,7 +23,7 @@ httpClient.interceptors.request.use((config) => {
   return config;
 });
 
-httpClient.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError<ApiErrorResponse>) => {
     const url = error.config?.url || '';
@@ -57,19 +57,19 @@ httpClient.interceptors.response.use(
  * (`ApiResponse<T>`) y devuelven directamente el payload `T`.
  * Si la llamada falla, lanzan un `ApiError`.
  */
-export const api = {
+export const httpClient = {
   get: <T>(url: string, config?: AxiosRequestConfig): Promise<T> =>
-    httpClient.get<ApiResponse<T>>(url, config).then((response) => response.data.data),
+    axiosInstance.get<ApiResponse<T>>(url, config).then((response) => response.data.data),
 
   post: <T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
-    httpClient.post<ApiResponse<T>>(url, body, config).then((response) => response.data.data),
+    axiosInstance.post<ApiResponse<T>>(url, body, config).then((response) => response.data.data),
 
   put: <T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
-    httpClient.put<ApiResponse<T>>(url, body, config).then((response) => response.data.data),
+    axiosInstance.put<ApiResponse<T>>(url, body, config).then((response) => response.data.data),
 
   patch: <T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
-    httpClient.patch<ApiResponse<T>>(url, body, config).then((response) => response.data.data),
+    axiosInstance.patch<ApiResponse<T>>(url, body, config).then((response) => response.data.data),
 
   delete: <T>(url: string, config?: AxiosRequestConfig): Promise<T> =>
-    httpClient.delete<ApiResponse<T>>(url, config).then((response) => response.data.data),
+    axiosInstance.delete<ApiResponse<T>>(url, config).then((response) => response.data.data),
 } as const;

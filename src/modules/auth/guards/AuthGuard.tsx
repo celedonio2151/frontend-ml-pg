@@ -6,9 +6,8 @@ export default function AuthGuard() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const location = useLocation();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated)
     return <Navigate replace state={{ from: location }} to={paths.auth.signin} />;
-  }
 
   return <Outlet />;
 }
