@@ -1,5 +1,6 @@
 import ApiRounded from '@mui/icons-material/ApiRounded';
 import DashboardRounded from '@mui/icons-material/DashboardRounded';
+import EventNoteRounded from '@mui/icons-material/EventNoteRounded';
 import GroupsRounded from '@mui/icons-material/GroupsRounded';
 import PeopleAltRounded from '@mui/icons-material/PeopleAltRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
@@ -57,6 +58,7 @@ const navSections: NavSection[] = [
     title: 'Gestion',
     items: [
       { label: 'Roles', href: paths.admin.roles, icon: ShieldRounded },
+      { label: 'Reuniones', href: paths.admin.meetings, icon: EventNoteRounded },
       { label: 'Directiva', href: paths.admin.directiva, icon: GroupsRounded },
       { label: 'API Docs', href: paths.admin.apidocs, icon: ApiRounded },
       { label: 'Configuracion', href: paths.admin.settings, icon: SettingsRounded },

@@ -26,7 +26,7 @@ import StatusPill from 'shared/ui/aqua/StatusPill';
 import type { StatusTone } from 'shared/ui/aqua/StatusPill';
 import { getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
 
-const normalizeRoleName = (role: string) => role.toUpperCase().replace('TECHNICIAN', 'TECHNICAL');
+const normalizeRoleName = (role: string) => role.toUpperCase().replace('TECHNICAL', 'TECHNICIAN');
 
 const statusFilterOptions = [
   { label: 'Activo', value: true },
@@ -41,7 +41,7 @@ const roleFilterOptions = RoleName.options.map((option) => ({
 const roleToneByName: Record<string, StatusTone> = {
   ADMIN: 'purple',
   READER: 'success',
-  TECHNICAL: 'warning',
+  TECHNICIAN: 'warning',
   USER: 'aqua',
 };
 

@@ -10,7 +10,7 @@ export const RoleName = defineOptions([
     label: 'Usuario',
   },
   {
-    value: 'TECHNICAL',
+    value: 'TECHNICIAN',
     label: 'Técnico',
   },
   {
@@ -21,18 +21,19 @@ export const RoleName = defineOptions([
 
 export type RoleType = (typeof RoleName.values)[number];
 
-export interface Roles {
+export type RolesList = {
   items: Role[];
-}
+};
 
-export interface Role {
+export type Role = {
   id: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
+  createdAt: string;
+  updatedAt: string;
   name: RoleType;
   description: string;
   status: boolean;
-}
+};
 
-// export type RoleResponse = ApiResponse<Role>;
-// export type RolesResponse = ApiResponse<Roles>;
+export type UpdateRoleDto = {
+  description: string;
+};

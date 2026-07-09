@@ -4,17 +4,14 @@ import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
 import EmailRounded from '@mui/icons-material/EmailRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import PhoneRounded from '@mui/icons-material/PhoneRounded';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
+import FormDialog from 'components/FormDialog';
 import { useCreateUserMutation, useUpdateUserMutation } from 'modules/users/hooks/useUsers';
 import {
   createUserSchema,
@@ -82,6 +79,7 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
+    control,
     formState: { errors },
     handleSubmit,
     register,
@@ -130,133 +128,134 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
   });
 
   return (
-    <Dialog fullWidth maxWidth="sm" onClose={handleClose} open={open}>
-      <DialogTitle sx={{ fontWeight: 900 }}>
-        {isEditMode ? 'Actualizar usuario' : 'Nuevo usuario'}
-      </DialogTitle>
-      <DialogContent>
-        <Stack component="form" id="user-form" onSubmit={onSubmit} spacing={2.25} sx={{ pt: 1 }}>
-          {submitError ? <Alert severity="error">{submitError}</Alert> : null}
+    <FormDialog
+      error={submitError}
+      formId="user-form"
+      isSubmitting={isSaving}
+      onClose={handleClose}
+      onSubmit={onSubmit}
+      open={open}
+      title={isEditMode ? 'Actualizar usuario' : 'Nuevo usuario'}
+    >
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+        <TextField
+          error={Boolean(errors.name)}
+          fullWidth
+          helperText={errors.name?.message}
+          label="Nombre"
+          slotProps={{
+            input: {
+              readOnly: isEditMode,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonRounded fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...register('name')}
+        />
+        <TextField
+          error={Boolean(errors.surname)}
+          fullWidth
+          helperText={errors.surname?.message}
+          label="Apellido"
+          slotProps={{
+            input: {
+              readOnly: isEditMode,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonRounded fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...register('surname')}
+        />
+      </Stack>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
-              error={Boolean(errors.name)}
-              fullWidth
-              helperText={errors.name?.message}
-              label="Nombre"
-              slotProps={{
-                input: {
-                  readOnly: isEditMode,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonRounded fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              {...register('name')}
-            />
-            <TextField
-              error={Boolean(errors.surname)}
-              fullWidth
-              helperText={errors.surname?.message}
-              label="Apellido"
-              slotProps={{
-                input: {
-                  readOnly: isEditMode,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonRounded fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              {...register('surname')}
-            />
-          </Stack>
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+        <TextField
+          error={Boolean(errors.ci)}
+          fullWidth
+          helperText={errors.ci?.message}
+          label="Cedula"
+          slotProps={{
+            input: {
+              readOnly: isEditMode,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <BadgeRounded fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...register('ci')}
+        />
+        <TextField
+          error={Boolean(errors.email)}
+          fullWidth
+          helperText={errors.email?.message}
+          label="Correo"
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailRounded fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+          type="email"
+          {...register('email')}
+        />
+      </Stack>
 
-          <TextField
-            error={Boolean(errors.ci)}
-            fullWidth
-            helperText={errors.ci?.message}
-            label="Cedula"
-            slotProps={{
-              input: {
-                readOnly: isEditMode,
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <BadgeRounded fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-            {...register('ci')}
-          />
-
-          <TextField
-            error={Boolean(errors.email)}
-            fullWidth
-            helperText={errors.email?.message}
-            label="Correo"
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailRounded fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-            type="email"
-            {...register('email')}
-          />
-
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
-              error={Boolean(errors.phoneNumber)}
-              fullWidth
-              helperText={errors.phoneNumber?.message}
-              label="Telefono"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PhoneRounded fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              {...register('phoneNumber')}
-            />
-            <TextField
-              error={Boolean(errors.birthDate)}
-              fullWidth
-              helperText={errors.birthDate?.message}
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+        <TextField
+          error={Boolean(errors.phoneNumber)}
+          fullWidth
+          helperText={errors.phoneNumber?.message}
+          label="Telefono"
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PhoneRounded fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...register('phoneNumber')}
+        />
+        <Controller
+          control={control}
+          name="birthDate"
+          render={({ field }) => (
+            <DatePicker
               label="Fecha de nacimiento"
-              type="date"
+              onChange={(value) => field.onChange(value?.isValid() ? value.format('YYYY-MM-DD') : '')}
+              value={field.value ? dayjs(field.value) : null}
               slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CalendarMonthRounded fontSize="small" />
-                    </InputAdornment>
-                  ),
+                textField: {
+                  error: Boolean(errors.birthDate),
+                  fullWidth: true,
+                  helperText: errors.birthDate?.message,
+                  slotProps: {
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <CalendarMonthRounded fontSize="small" />
+                        </InputAdornment>
+                      ),
+                    },
+                  },
                 },
-                inputLabel: { shrink: true },
               }}
-              {...register('birthDate')}
             />
-          </Stack>
-        </Stack>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button disabled={isSaving} onClick={handleClose}>
-          Cancelar
-        </Button>
-        <Button disabled={isSaving} form="user-form" type="submit" variant="contained">
-          {isSaving ? 'Guardando...' : 'Guardar'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          )}
+        />
+      </Stack>
+    </FormDialog>
   );
 }

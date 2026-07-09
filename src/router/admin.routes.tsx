@@ -15,6 +15,8 @@ const WaterSystemShowcasePage = lazy(() => import('modules/public/pages/WaterSys
 const DashboardPage = lazy(() => import('modules/dashboard/pages/DashBoardPage'));
 const UserPage = lazy(() => import('modules/users/pages/UserPage'));
 const RolPage = lazy(() => import('modules/roles/pages/RolePage'));
+const MeetingPage = lazy(() => import('modules/meetings/pages/MeetingPage'));
+const MeetingDetailPage = lazy(() => import('modules/meetings/pages/MeetingDetailPage'));
 const MeterPage = lazy(() => import('modules/meters/pages/MeterPage'));
 const ReadingPage = lazy(() => import('modules/readings/pages/ReadingPage'));
 const InvoicePage = lazy(() => import('modules/invoices/pages/InvoicePage'));
@@ -72,6 +74,22 @@ export const adminRoutes: RouteObject[] = [
                 element: (
                   <Suspense fallback={<PageSkeleton />}>
                     <RolPage />
+                  </Suspense>
+                ),
+              },
+              {
+                path: paths.admin.meetings,
+                element: (
+                  <Suspense fallback={<PageSkeleton />}>
+                    <MeetingPage />
+                  </Suspense>
+                ),
+              },
+              {
+                path: `${paths.admin.meetings}/:id`,
+                element: (
+                  <Suspense fallback={<PageSkeleton />}>
+                    <MeetingDetailPage />
                   </Suspense>
                 ),
               },

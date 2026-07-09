@@ -22,6 +22,7 @@ export default {
     meters: `${rootPaths.pageRoot}/admin/meters`,
     readings: `${rootPaths.pageRoot}/admin/readings`,
     invoices: `${rootPaths.pageRoot}/admin/invoices`,
+    meetings: `${rootPaths.pageRoot}/admin/meetings`,
     directiva: `${rootPaths.pageRoot}/admin/directiva`,
     treasury: `${rootPaths.pageRoot}/admin/treasury`,
     expenses: `${rootPaths.pageRoot}/admin/expenses`,
