@@ -1,5 +1,5 @@
 import type { Meter } from 'modules/meters/types/meter.types';
-import type { Role } from 'modules/roles/types/role.types';
+import type { Role, RoleType } from 'modules/roles/types/role.types';
 import type { PaginatedData, SortParam } from 'shared/types/api-reponse';
 
 export type UserRoleName = 'ADMIN' | 'READER' | 'TECHNICAL' | 'TECHNICIAN' | 'USER' | string;
@@ -44,10 +44,14 @@ export type UpdateUserDto = Partial<Pick<CreateUserDto, 'birthDate' | 'email' | 
 };
 
 export type UsersListParams = {
+  q?: string;
   limit?: number;
   page?: number;
-  q?: string;
+  withDeleted?: boolean;
   sortBy?: SortParam[];
+  ci?: string;
+  status?: boolean;
+  roleName?: RoleType;
 };
 
 export type UsersList = PaginatedData<UserWithRolesAndMeters>;
