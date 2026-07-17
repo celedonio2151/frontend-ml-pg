@@ -70,6 +70,11 @@ export default function UserPage() {
       limit: 100,
       page: 1,
       sortBy: [{ order: 'desc', whom: 'createdAt' }],
+      ci: '',
+      q: '',
+      roleName: undefined,
+      status: undefined,
+      withDeleted: false,
     }),
     [],
   );
