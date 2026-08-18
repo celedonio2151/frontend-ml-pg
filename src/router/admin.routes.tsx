@@ -19,7 +19,10 @@ const MeetingPage = lazy(() => import('modules/meetings/pages/MeetingPage'));
 const MeetingDetailPage = lazy(() => import('modules/meetings/pages/MeetingDetailPage'));
 const MeterPage = lazy(() => import('modules/meters/pages/MeterPage'));
 const ReadingPage = lazy(() => import('modules/readings/pages/ReadingPage'));
+const ReadingDetailPage = lazy(() => import('modules/readings/pages/ReadingDetailPage'));
 const InvoicePage = lazy(() => import('modules/invoices/pages/InvoicePage'));
+const InvoiceDetailPage = lazy(() => import('modules/invoices/pages/InvoiceDetailPage'));
+const MorososPage = lazy(() => import('modules/invoices/pages/MorososPage'));
 const TreasuryPage = lazy(() => import('modules/treasury/pages/TreasuryPage'));
 const ExpensePage = lazy(() => import('modules/expenses/pages/ExpensePage'));
 const SettingPage = lazy(() => import('modules/settings/pages/SettingsPage'));
@@ -110,10 +113,34 @@ export const adminRoutes: RouteObject[] = [
                 ),
               },
               {
+                path: paths.admin.readingDetail,
+                element: (
+                  <Suspense fallback={<PageSkeleton />}>
+                    <ReadingDetailPage />
+                  </Suspense>
+                ),
+              },
+              {
                 path: paths.admin.invoices,
                 element: (
                   <Suspense fallback={<PageSkeleton />}>
                     <InvoicePage />
+                  </Suspense>
+                ),
+              },
+              {
+                path: paths.admin.invoiceDetail,
+                element: (
+                  <Suspense fallback={<PageSkeleton />}>
+                    <InvoiceDetailPage />
+                  </Suspense>
+                ),
+              },
+              {
+                path: paths.admin.invoicesMorosos,
+                element: (
+                  <Suspense fallback={<PageSkeleton />}>
+                    <MorososPage />
                   </Suspense>
                 ),
               },

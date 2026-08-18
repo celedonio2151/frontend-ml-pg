@@ -1,5 +1,5 @@
 import type { Invoice } from 'modules/invoices/types/invoice.types';
-import type { MeterWithUser } from 'modules/meters/types/meter.types';
+import type { Meter, MeterWithUser } from 'modules/meters/types/meter.types';
 import type { PaginatedData, SortParam } from 'shared/types/api-reponse';
 
 export type MonthValue = {
@@ -35,7 +35,14 @@ export type ReadingWithInvoice = Reading & {
   invoice: Invoice;
 };
 
-export type ReadingDetail = Reading;
+export type ReadingWithMeter = Reading & {
+  meter: Meter;
+};
+
+export type ReadingWithMeterUserInvoice = Reading & {
+  meter: MeterWithUser;
+  invoice: Invoice;
+};
 
 export type CreateReadingDto = {
   currentValue: number;

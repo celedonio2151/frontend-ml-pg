@@ -26,3 +26,19 @@ export type MetersListParams = {
 };
 
 export type MetersList = PaginatedData<MeterWithUser>;
+
+export type CreateMeterDto = {
+  meterNumber: number;
+  maximumCapacity?: number;
+  userId: string;
+};
+
+export type UpdateMeterDto = {
+  meterNumber?: number;
+  maximumCapacity?: number;
+  status?: boolean;
+};
+
+export type ChangeOwnerDto = {
+  newUserId: string;
+};

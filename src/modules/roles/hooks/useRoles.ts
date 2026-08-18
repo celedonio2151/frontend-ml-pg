@@ -4,6 +4,7 @@ import type { UpdateRoleDto } from 'modules/roles/types/role.types';
 
 export const rolesQueryKeys = {
   all: ['roles'] as const,
+  usersCount: () => [...rolesQueryKeys.all, 'users-count'] as const,
   lists: () => [...rolesQueryKeys.all, 'list'] as const,
   detail: (id: string) => [...rolesQueryKeys.all, 'detail', id] as const,
 };
@@ -12,6 +13,13 @@ export function useRoles() {
   return useQuery({
     queryKey: rolesQueryKeys.lists(),
     queryFn: rolesService.findAll,
+  });
+}
+
+export function useTotalUsersByRole() {
+  return useQuery({
+    queryKey: rolesQueryKeys.usersCount(),
+    queryFn: rolesService.findTotalUsersByRole,
   });
 }
 

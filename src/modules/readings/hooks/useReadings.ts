@@ -20,11 +20,11 @@ export function useReadings(params: ReadingsListParams = {}) {
   });
 }
 
-export function useReading(id?: string) {
+export function useReading(id: string) {
   return useQuery({
     enabled: Boolean(id),
-    queryKey: readingsQueryKeys.detail(id ?? ''),
-    queryFn: () => readingsService.findOne(id!),
+    queryKey: readingsQueryKeys.detail(id),
+    queryFn: () => readingsService.findOne(id),
   });
 }
 

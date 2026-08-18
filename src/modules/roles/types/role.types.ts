@@ -34,6 +34,14 @@ export type Role = {
   status: boolean;
 };
 
+export type RoleUsersCount = Role & {
+  usersCount: number;
+};
+
+export type ListRolesUsersCountResponseDto = {
+  items: RoleUsersCount[];
+};
+
 export type UpdateRoleDto = {
   description: string;
 };

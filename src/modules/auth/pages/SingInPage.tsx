@@ -1,8 +1,14 @@
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Link, useLocation, useNavigate } from 'react-router';
+
+// MUI ICONS
 import EmailRounded from '@mui/icons-material/EmailRounded';
 import LockRounded from '@mui/icons-material/LockRounded';
 import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
+
+import { zodResolver } from '@hookform/resolvers/zod';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -12,9 +18,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Link, useLocation, useNavigate } from 'react-router';
+
 import { useSignInMutation } from 'modules/auth/hooks/useAuthMutations';
 import { signInSchema, type SignInFormValues } from 'modules/auth/schemas/auth.schemas';
 import paths from 'router/paths';
@@ -123,12 +127,13 @@ export default function SingInPage() {
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <EmailRounded fontSize="small" />
+                    <EmailRounded fontSize="medium" />
                   </InputAdornment>
                 ),
               },
             }}
             type="email"
+            size="medium"
             {...register('email')}
           />
           <TextField
@@ -141,7 +146,7 @@ export default function SingInPage() {
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LockRounded fontSize="small" />
+                    <LockRounded fontSize="medium" />
                   </InputAdornment>
                 ),
                 endAdornment: (
@@ -158,6 +163,7 @@ export default function SingInPage() {
               },
             }}
             type={showPassword ? 'text' : 'password'}
+            size="medium"
             {...register('password')}
           />
         </Stack>

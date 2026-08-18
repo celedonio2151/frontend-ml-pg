@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import BadgeRounded from '@mui/icons-material/BadgeRounded';
+
+// MUI ICONS
 import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
+import ContactEmergencyRoundedIcon from '@mui/icons-material/ContactEmergencyRounded';
 import EmailRounded from '@mui/icons-material/EmailRounded';
 import LockRounded from '@mui/icons-material/LockRounded';
 import PersonAddAltRounded from '@mui/icons-material/PersonAddAltRounded';
@@ -20,6 +22,7 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router';
+
 import { useSignUpMutation } from 'modules/auth/hooks/useAuthMutations';
 import { signUpSchema, type SignUpFormValues } from 'modules/auth/schemas/auth.schemas';
 import paths from 'router/paths';
@@ -121,11 +124,13 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.name?.message}
               label="Nombre"
+              required
+              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PersonRounded fontSize="small" />
+                      <PersonRounded fontSize="medium" />
                     </InputAdornment>
                   ),
                 },
@@ -137,11 +142,13 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.surname?.message}
               label="Apellido"
+              required
+              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PersonRounded fontSize="small" />
+                      <PersonRounded fontSize="medium" />
                     </InputAdornment>
                   ),
                 },
@@ -155,12 +162,14 @@ export default function SignUpPage() {
               error={Boolean(errors.ci)}
               fullWidth
               helperText={errors.ci?.message}
-              label="Cedula"
+              label="Carnet de identidad"
+              required
+              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <BadgeRounded fontSize="small" />
+                      <ContactEmergencyRoundedIcon fontSize="medium" />
                     </InputAdornment>
                   ),
                 },
@@ -172,11 +181,13 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.phoneNumber?.message}
               label="Telefono"
+              required
+              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PhoneRounded fontSize="small" />
+                      <PhoneRounded fontSize="medium" />
                     </InputAdornment>
                   ),
                 },
@@ -191,11 +202,13 @@ export default function SignUpPage() {
             fullWidth
             helperText={errors.email?.message}
             label="Correo"
+            required
+            size="medium"
             slotProps={{
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <EmailRounded fontSize="small" />
+                    <EmailRounded fontSize="medium" />
                   </InputAdornment>
                 ),
               },
@@ -211,11 +224,13 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.password?.message}
               label="Contrasena"
+              required
+              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LockRounded fontSize="small" />
+                      <LockRounded fontSize="medium" />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -239,29 +254,41 @@ export default function SignUpPage() {
               fullWidth
               helperText={errors.birthDate?.message}
               label="Fecha de nacimiento"
-              type="date"
+              required
+              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <CalendarMonthRounded fontSize="small" />
+                      <CalendarMonthRounded fontSize="medium" />
                     </InputAdornment>
                   ),
                 },
                 inputLabel: { shrink: true },
               }}
+              type="date"
               {...register('birthDate')}
             />
           </Stack>
         </Stack>
 
-        <Button disabled={signUpMutation.isPending} fullWidth size="large" type="submit" variant="contained">
+        <Button
+          disabled={signUpMutation.isPending}
+          fullWidth
+          size="large"
+          type="submit"
+          variant="contained"
+        >
           {signUpMutation.isPending ? 'Creando...' : 'Crear cuenta'}
         </Button>
 
         <Typography color="text.secondary" variant="body2" sx={{ textAlign: 'center' }}>
           Ya tienes cuenta?{' '}
-          <Box component={Link} to={paths.auth.signin} sx={{ color: 'primary.light', fontWeight: 800 }}>
+          <Box
+            component={Link}
+            to={paths.auth.signin}
+            sx={{ color: 'primary.light', fontWeight: 800 }}
+          >
             Iniciar sesion
           </Box>
         </Typography>

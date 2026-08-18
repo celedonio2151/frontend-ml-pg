@@ -1,13 +1,14 @@
-import { httpClient } from 'shared/lib/http-client';
-import { buildListParams } from 'shared/utils/buildListParams';
 import type {
   CreateReadingDto,
   Reading,
-  ReadingDetail,
   ReadingsList,
   ReadingsListParams,
+  ReadingWithInvoice,
+  ReadingWithMeterUserInvoice,
   UpdateReadingDto,
 } from 'modules/readings/types/reading.types';
+import { httpClient } from 'shared/lib/http-client';
+import { buildListParams } from 'shared/utils/buildListParams';
 
 const READINGS_ENDPOINT = '/readings';
 
@@ -33,12 +34,16 @@ export const readingsService = {
     const searchParams = buildReadingsListParams(params);
     const query = searchParams.toString();
 
-    return httpClient.get<ReadingsList>(query ? `${READINGS_ENDPOINT}?${query}` : READINGS_ENDPOINT);
+    return httpClient.get<ReadingsList>(
+      query ? `${READINGS_ENDPOINT}?${query}` : READINGS_ENDPOINT,
+    );
   },
 
-  findOne: (id: string) => httpClient.get<ReadingDetail>(`${READINGS_ENDPOINT}/${id}`),
+  findOne: (id: string) =>
+    httpClient.get<ReadingWithMeterUserInvoice>(`${READINGS_ENDPOINT}/${id}`),
 
-  create: (payload: CreateReadingDto) => httpClient.post<Reading>(READINGS_ENDPOINT, payload),
+  create: (payload: CreateReadingDto) =>
+    httpClient.post<ReadingWithInvoice>(READINGS_ENDPOINT, payload),
 
   update: (id: string, payload: UpdateReadingDto) =>
     httpClient.patch<Reading>(`${READINGS_ENDPOINT}/${id}`, payload),

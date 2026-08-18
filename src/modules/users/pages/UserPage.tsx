@@ -16,14 +16,17 @@ import DeleteRounded from '@mui/icons-material/DeleteRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
 import RefreshRounded from '@mui/icons-material/RefreshRounded';
 
-import DataTable from 'components/MainTable/DataTable';
+import type { DataTableServerSide as ServerSideConfig } from 'components/MainTableServerSide/DataTableServerSide';
+import DataTableServerSide from 'components/MainTableServerSide/DataTableServerSide';
+import { RoleName, type RoleType } from 'modules/roles/types/role.types';
 import DeleteUserDialog from 'modules/users/components/DeleteUserDialog';
 import UserFormDialog from 'modules/users/components/UserFormDialog';
 import { useUsers } from 'modules/users/hooks/useUsers';
-import type { User, UsersListParams, UserWithRolesAndMeters } from 'modules/users/types/user.types';
-import { RoleName } from 'modules/roles/types/role.types';
-import StatusPill from 'shared/ui/aqua/StatusPill';
+import type { UsersListParams, UserWithRolesAndMeters } from 'modules/users/types/user.types';
+import { useDebounce } from 'shared/hooks/useDebounce';
+import { useTableServerSide } from 'shared/hooks/useTableServerSide';
 import type { StatusTone } from 'shared/ui/aqua/StatusPill';
+import StatusPill from 'shared/ui/aqua/StatusPill';
 import { getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
 
 const normalizeRoleName = (role: string) => role.toUpperCase().replace('TECHNICAL', 'TECHNICIAN');
@@ -61,32 +64,62 @@ const getUserInitials = (user: UserWithRolesAndMeters) => {
 };
 
 export default function UserPage() {
-  const [formUser, setFormUser] = useState<User | null>(null);
+  const [formUser, setFormUser] = useState<UserWithRolesAndMeters | null>(null);
   const [formOpen, setFormOpen] = useState(false);
-  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [deleteUser, setDeleteUser] = useState<UserWithRolesAndMeters | null>(null);
+
+  // 1. Usar tu hook useTableServerSide para el estado básico de la tabla
+  const { page, pageSize, search, sortBy, serverSideProps, resetPage } = useTableServerSide(10, [
+    { order: 'desc', whom: 'createdAt' },
+  ]);
+
+  // 2. Filtros de columnas adicionales
+  const [columnFilters, setColumnFilters] = useState<Array<{ id: string; value: unknown }>>([]);
+
+  // 3. Aplicar useDebounce al search para no saturar el backend con llamadas al escribir
+  const debouncedSearch = useDebounce(search, 500);
+
+  // Extraer valores de los filtros por columna para mandarlos a la API
+  const ciFilter = columnFilters.find((f) => f.id === 'ci')?.value as string | undefined;
+  const roleFilter = columnFilters.find((f) => f.id === 'roles')?.value as RoleType | undefined;
+  const statusFilter = columnFilters.find((f) => f.id === 'status')?.value as boolean | undefined;
 
   const usersParams = useMemo<UsersListParams>(
     () => ({
-      limit: 100,
-      page: 1,
-      sortBy: [{ order: 'desc', whom: 'createdAt' }],
-      ci: '',
-      q: '',
-      roleName: undefined,
-      status: undefined,
+      limit: pageSize,
+      page: page,
+      sortBy: sortBy,
+      ci: ciFilter,
+      q: debouncedSearch,
+      roleName: roleFilter,
+      status: statusFilter,
       withDeleted: false,
     }),
-    [],
+    [pageSize, page, sortBy, ciFilter, debouncedSearch, roleFilter, statusFilter],
   );
+
   const usersQuery = useUsers(usersParams);
   const users = usersQuery.data?.items ?? [];
+
+  // Configuración de la prop serverSide fusionando tu hook con custom logic
+  const serverSideConfig: ServerSideConfig = useMemo(
+    () => ({
+      ...serverSideProps,
+      totalRows: usersQuery.data?.meta?.total ?? 0,
+      onColumnFiltersChange: (newFilters) => {
+        setColumnFilters(newFilters);
+        resetPage(); // Reset page to 1 when filters change
+      },
+    }),
+    [serverSideProps, usersQuery.data?.meta?.total, resetPage],
+  );
 
   const handleCreate = useCallback(() => {
     setFormUser(null);
     setFormOpen(true);
   }, []);
 
-  const handleEdit = useCallback((user: User) => {
+  const handleEdit = useCallback((user: UserWithRolesAndMeters) => {
     setFormUser(user);
     setFormOpen(true);
   }, []);
@@ -102,7 +135,7 @@ export default function UserPage() {
         accessorFn: (row) => `${row.name} ${row.surname} ${row.email ?? ''}`,
         id: 'user',
         header: 'Usuario',
-        meta: { filterVariant: 'text' },
+        enableColumnFilter: false,
         cell: ({ row }) => {
           const user = row.original;
 
@@ -203,6 +236,7 @@ export default function UserPage() {
         accessorFn: (row) => row.meters.length,
         id: 'meters',
         header: 'Medidores',
+        enableColumnFilter: false,
         meta: { filterVariant: 'number' },
         cell: ({ getValue }) => (
           <Typography color="primary.light" variant="body2" sx={{ fontWeight: 850 }}>
@@ -247,7 +281,8 @@ export default function UserPage() {
         </Alert>
       ) : null}
 
-      <DataTable<UserWithRolesAndMeters>
+      <DataTableServerSide<UserWithRolesAndMeters>
+        serverSide={serverSideConfig}
         ariaLabel="tabla de usuarios"
         columns={columns}
         data={users}

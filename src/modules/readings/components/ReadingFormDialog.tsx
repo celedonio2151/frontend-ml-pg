@@ -1,11 +1,16 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+
 import { zodResolver } from '@hookform/resolvers/zod';
+
+// MUI ICONS
 import AccountBalanceWalletRounded from '@mui/icons-material/AccountBalanceWalletRounded';
 import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
 import ImageRounded from '@mui/icons-material/ImageRounded';
-import NotesRounded from '@mui/icons-material/NotesRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
+
 import FormControlLabel from '@mui/material/FormControlLabel';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
@@ -14,8 +19,7 @@ import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+
 import FormDialog from 'components/FormDialog';
 import { useMeters } from 'modules/meters/hooks/useMeters';
 import type { MetersListParams } from 'modules/meters/types/meter.types';
@@ -29,32 +33,24 @@ import {
 } from 'modules/readings/schemas/reading.schemas';
 import type {
   CreateReadingDto,
-  ReadingWithMeterAndUser,
+  Reading,
+  ReadingWithMeter,
   UpdateReadingDto,
 } from 'modules/readings/types/reading.types';
 import { applyApiFieldErrors, getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
+import { defaultReadingFormValues } from '../utils/reading-form.mapper';
 
 type ReadingFormDialogProps = {
   onClose: () => void;
   open: boolean;
-  reading?: ReadingWithMeterAndUser | null;
+  reading?: ReadingWithMeter;
 };
-
-const getEmptyValues = (): ReadingFormValues => ({
-  balance: '',
-  currentValue: '',
-  date: new Date().toISOString(),
-  description: '',
-  isRollover: false,
-  meterId: '',
-  meterImage: '',
-});
 
 const formatNumber = (value?: number) => (Number.isFinite(value) ? String(value) : '');
 
-const getCurrentReadingValue = (reading: ReadingWithMeterAndUser) => reading.lastMonth?.value ?? 0;
+const getCurrentReadingValue = (reading: Reading) => reading.lastMonth?.value ?? 0;
 
-const toFormValues = (reading?: ReadingWithMeterAndUser | null): ReadingFormValues =>
+const toFormValues = (reading?: Reading | null): ReadingFormValues =>
   reading
     ? {
         balance: formatNumber(reading.balance),
@@ -65,7 +61,7 @@ const toFormValues = (reading?: ReadingWithMeterAndUser | null): ReadingFormValu
         meterId: reading.meterId,
         meterImage: reading.meterImage ?? '',
       }
-    : getEmptyValues();
+    : defaultReadingFormValues();
 
 const cleanOptional = (value?: string) => {
   const trimmed = value?.trim();
@@ -92,7 +88,7 @@ function toCreatePayload(values: ReadingFormValues): CreateReadingDto {
   };
 }
 
-function toUpdatePayload(values: ReadingFormValues, reading: ReadingWithMeterAndUser): UpdateReadingDto | null {
+function toUpdatePayload(values: ReadingFormValues, reading: Reading): UpdateReadingDto | null {
   const nextBalance = toOptionalNumber(values.balance);
   const description = cleanOptional(values.description);
   const balanceChanged = nextBalance !== undefined && nextBalance !== reading.balance;
@@ -133,7 +129,7 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
     reset,
     setError,
   } = useForm<ReadingFormValues>({
-    defaultValues: getEmptyValues(),
+    defaultValues: defaultReadingFormValues(),
     mode: 'onBlur',
     resolver: zodResolver(readingFormSchema),
   });
@@ -218,6 +214,7 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
               disabled
               fullWidth
               label="Propietario"
+              size="medium"
               value={`${reading?.ownerName ?? ''} ${reading?.ownerSurname ?? ''}`.trim()}
               slotProps={{
                 input: {
@@ -233,7 +230,12 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
               disabled
               fullWidth
               label="Medidor"
-              value={reading?.meter?.meterNumber ? `#${reading.meter.meterNumber}` : reading?.meterId ?? ''}
+              size="medium"
+              value={
+                reading?.meter?.meterNumber
+                  ? `#${reading.meter.meterNumber}`
+                  : (reading?.meterId ?? '')
+              }
               slotProps={{
                 input: {
                   startAdornment: (
@@ -256,6 +258,7 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
                 (metersQuery.isError ? 'No se pudieron cargar medidores' : undefined)
               }
               label="Medidor"
+              size="medium"
               select
               slotProps={{
                 input: {
@@ -318,6 +321,7 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
             helperText={errors.currentValue?.message}
             label="Lectura actual"
             type="number"
+            size="medium"
             slotProps={{
               htmlInput: { min: 0, step: '0.01' },
               input: {
@@ -338,6 +342,7 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
               helperText={errors.balance?.message}
               label="Balance"
               type="number"
+              size="medium"
               slotProps={{
                 htmlInput: { min: 0, step: '0.01' },
                 input: {
@@ -357,6 +362,7 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
               helperText={errors.meterImage?.message}
               label="Imagen del medidor"
               placeholder="URL o base64"
+              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
@@ -400,15 +406,6 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
           label={isEditMode ? 'Descripcion / justificacion' : 'Descripcion'}
           multiline
           minRows={3}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <NotesRounded fontSize="small" />
-                </InputAdornment>
-              ),
-            },
-          }}
           {...register('description')}
         />
       </Stack>

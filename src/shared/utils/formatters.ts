@@ -25,3 +25,15 @@ export function calculateDaysRemaining(startDate: string | Date, endDate: string
   }
 }
 
+export function formatCubicMeters(value: number) {
+  return `${value.toLocaleString('es-BO', { minimumFractionDigits: 0, maximumFractionDigits: 3 })} m³`;
+}
+
+export function formatCurrency(value: number) {
+  return new Intl.NumberFormat('es-BO', {
+    currency: 'BOB',
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+    style: 'currency',
+  }).format(value);
+}
