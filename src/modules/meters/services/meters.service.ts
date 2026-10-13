@@ -1,13 +1,14 @@
 import { httpClient } from 'shared/lib/http-client';
-import { buildListParams } from 'shared/utils/buildListParams';
-import type {
-  ChangeOwnerDto,
-  CreateMeterDto,
-  Meter,
-  MetersList,
-  MetersListParams,
-  MeterWithUser,
-  UpdateMeterDto,
+import { buildListParams, includeQuery } from 'shared/utils/buildListParams';
+import {
+  METER_INCLUDE,
+  type ChangeOwnerDto,
+  type CreateMeterDto,
+  type Meter,
+  type MetersList,
+  type MetersListParams,
+  type MeterWithUser,
+  type UpdateMeterDto,
 } from 'modules/meters/types/meter.types';
 
 const METERS_ENDPOINT = '/meters';
@@ -19,8 +20,14 @@ function buildMetersListParams(params: MetersListParams = {}) {
   if (params.page) base.page = String(params.page);
   if (params.limit) base.limit = String(params.limit);
   if (params.withDeleted !== undefined) base.withDeleted = String(params.withDeleted);
+  if (params.ci) base.ci = params.ci;
+  if (params.email) base.email = params.email;
+  if (params.name) base.name = params.name;
+  if (params.meterNumber !== undefined) base.meterNumber = String(params.meterNumber);
+  if (params.status !== undefined) base.status = String(params.status);
+  if (params.userId) base.userId = params.userId;
 
-  return buildListParams(base, params.sortBy);
+  return buildListParams(base, params.sortBy, METER_INCLUDE);
 }
 
 export const metersService = {
@@ -33,7 +40,8 @@ export const metersService = {
     );
   },
 
-  findOne: (id: string) => httpClient.get<MeterWithUser>(`${METERS_ENDPOINT}/${id}`),
+  findOne: (id: string) =>
+    httpClient.get<MeterWithUser>(`${METERS_ENDPOINT}/${id}${includeQuery(METER_INCLUDE)}`),
 
   create: (payload: CreateMeterDto) => httpClient.post<MeterWithUser>(METERS_ENDPOINT, payload),
 

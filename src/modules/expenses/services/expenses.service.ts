@@ -21,6 +21,7 @@ function buildExpensesListParams(params: ExpensesListParams = {}) {
   if (params.withDeleted !== undefined) base.withDeleted = String(params.withDeleted);
   if (params.category) base.category = params.category;
   if (params.status) base.status = params.status;
+  if (params.registeredById) base.registeredById = params.registeredById;
   if (params.dateFrom) base.dateFrom = params.dateFrom;
   if (params.dateTo) base.dateTo = params.dateTo;
 

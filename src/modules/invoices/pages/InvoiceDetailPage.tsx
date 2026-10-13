@@ -30,6 +30,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import dayjs from 'dayjs';
 
+import InvoiceQrPayment from 'modules/invoices/components/InvoiceQrPayment';
 import { useInvoice, usePayInvoiceMutation } from 'modules/invoices/hooks/useInvoices';
 import { payInvoiceSchema, type PayInvoiceValues } from 'modules/invoices/schemas/invoice.schemas';
 import paths from 'router/paths';
@@ -54,9 +55,10 @@ const getStatusProps = (status: InvoiceStatusType) => {
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const invoiceId = id ?? '';
 
-  const { data: invoice, isLoading, isError, error } = useInvoice(invoiceId);
+  if (!id) navigate(paths.admin.invoices, { replace: true });
+
+  const { data: invoice, isLoading, isError, error } = useInvoice(id);
   const payMutation = usePayInvoiceMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -84,11 +86,10 @@ export default function InvoiceDetailPage() {
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);
-    if (!invoiceId) return;
 
     try {
       await payMutation.mutateAsync({
-        id: invoiceId,
+        id: id!,
         payload: {
           paymentMethod: values.paymentMethod,
           notes: values.notes,
@@ -284,7 +285,7 @@ export default function InvoiceDetailPage() {
                       <SpeedRounded fontSize="small" /> Medidor
                     </Typography>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 500 }}>
-                      #{invoice.reading.meter.meterNumber}
+                      #{invoice.meter.meterNumber}
                     </Typography>
                   </Stack>
                 </Grid>
@@ -402,65 +403,41 @@ export default function InvoiceDetailPage() {
                   )}
                 />
 
-                {paymentMethod === 'QR' && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      p: 3,
-                      bgcolor: 'background.default',
-                      borderRadius: 2,
-                      border: '1px dashed',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Pago_Factura_${shortId}_Monto_${amountDueNum}`}
-                      alt="QR Code"
-                      sx={{ width: 160, height: 160, borderRadius: 1 }}
+                {paymentMethod === 'QR' && id ? (
+                  <InvoiceQrPayment active invoiceId={id} />
+                ) : (
+                  <>
+                    <TextField
+                      error={Boolean(errors.notes)}
+                      fullWidth
+                      helperText={errors.notes?.message}
+                      label="Notas adicionales (opcional)"
+                      multiline
+                      rows={2}
+                      size="small"
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start" sx={{ mt: -3 }}>
+                              <NotesRounded fontSize="small" />
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                      {...register('notes')}
                     />
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ mt: 2, textAlign: 'center' }}
+
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      size="large"
+                      disabled={payMutation.isPending}
+                      sx={{ mt: 2, py: 1.5, borderRadius: 2, fontWeight: 700 }}
                     >
-                      Escanea el QR desde tu aplicación móvil bancaria.
-                    </Typography>
-                  </Box>
+                      {payMutation.isPending ? 'Procesando...' : 'Confirmar Pago'}
+                    </Button>
+                  </>
                 )}
-
-                <TextField
-                  error={Boolean(errors.notes)}
-                  fullWidth
-                  helperText={errors.notes?.message}
-                  label="Notas adicionales (opcional)"
-                  multiline
-                  rows={2}
-                  size="small"
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start" sx={{ mt: -3 }}>
-                          <NotesRounded fontSize="small" />
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                  {...register('notes')}
-                />
-
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  disabled={payMutation.isPending}
-                  sx={{ mt: 2, py: 1.5, borderRadius: 2, fontWeight: 700 }}
-                >
-                  {payMutation.isPending ? 'Procesando...' : 'Confirmar Pago'}
-                </Button>
               </Stack>
             ) : (
               <Stack spacing={3} sx={{ alignItems: 'center', textAlign: 'center', py: 4 }}>

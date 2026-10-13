@@ -1,13 +1,19 @@
+// MUI ICONS
+import AccountCircleRounded from '@mui/icons-material/AccountCircleRounded';
 import ApiRounded from '@mui/icons-material/ApiRounded';
+import AnalyticsRounded from '@mui/icons-material/AnalyticsRounded';
 import DashboardRounded from '@mui/icons-material/DashboardRounded';
 import EventNoteRounded from '@mui/icons-material/EventNoteRounded';
 import GroupsRounded from '@mui/icons-material/GroupsRounded';
 import PeopleAltRounded from '@mui/icons-material/PeopleAltRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
+import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded';
+import SavingsRoundedIcon from '@mui/icons-material/SavingsRounded';
 import SettingsRounded from '@mui/icons-material/SettingsRounded';
 import ShieldRounded from '@mui/icons-material/ShieldRounded';
 import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
+
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -49,9 +55,10 @@ const navSections: NavSection[] = [
       { label: 'Usuarios', href: paths.admin.users, icon: PeopleAltRounded },
       { label: 'Medidores', href: paths.admin.meters, icon: SpeedRounded },
       { label: 'Lecturas', href: paths.admin.readings, icon: WaterDropRounded, badge: '23' },
-      { label: 'Facturas', href: paths.admin.invoices, icon: ReceiptLongRounded },
+      { label: 'Facturas', href: paths.admin.invoices, icon: ReceiptRoundedIcon },
       { label: 'Gastos', href: paths.admin.expenses, icon: ReceiptLongRounded },
-      { label: 'Tesoreria', href: paths.admin.treasury, icon: ReceiptLongRounded },
+      { label: 'Tesoreria', href: paths.admin.treasury, icon: SavingsRoundedIcon },
+      { label: 'Analítica', href: paths.admin.reports, icon: AnalyticsRounded },
     ],
   },
   {
@@ -63,6 +70,10 @@ const navSections: NavSection[] = [
       { label: 'API Docs', href: paths.admin.apidocs, icon: ApiRounded },
       { label: 'Configuracion', href: paths.admin.settings, icon: SettingsRounded },
     ],
+  },
+  {
+    title: 'Mi Cuenta',
+    items: [{ label: 'Mi Cuenta', href: paths.admin.myAccount, icon: AccountCircleRounded }],
   },
 ];
 
@@ -171,7 +182,16 @@ function DrawerItems({ expanded, onNavigate }: DrawerItemsProps) {
         </Stack>
       </Box>
 
-      <Stack component="nav" spacing={2} sx={{ flex: 1, minHeight: 0 }}>
+      <Stack
+        component="nav"
+        spacing={2}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          scrollbarWidth: 'auto',
+        }}
+      >
         {navSections.map((section) => (
           <Box key={section.title}>
             {expanded ? (

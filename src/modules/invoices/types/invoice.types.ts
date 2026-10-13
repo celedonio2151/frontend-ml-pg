@@ -43,12 +43,24 @@ export type InvoicesListParams = {
   q?: string;
   sortBy?: SortParam[];
   withDeleted?: boolean;
+  status?: InvoiceStatusType;
+  isPaid?: boolean;
+  paymentMethod?: PaymentMethodType;
+  meterId?: string;
+  dueFrom?: string;
+  dueTo?: string;
 };
-type ReadingWithMeter = Reading & {
-  meter: Meter;
-};
+
+/** Relaciones que el backend solo devuelve si se piden con `include`. */
+export const INVOICE_INCLUDE = ['reading', 'meter'] as const;
+
+/**
+ * Factura con `include=reading,meter`. El medidor ya no viene anidado en la
+ * lectura (`reading.meter`): ahora es hermano de `reading` en la factura.
+ */
 export type InvoiceWithReadingMeter = Invoice & {
-  reading: ReadingWithMeter;
+  reading: Reading;
+  meter: Meter;
 };
 
 export type InvoicesList = PaginatedData<InvoiceWithReadingMeter>;

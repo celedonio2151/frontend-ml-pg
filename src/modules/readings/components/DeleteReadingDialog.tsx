@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import ConfirmDialog from 'components/ConfirmDialog';
 import { useDeleteReadingMutation } from 'modules/readings/hooks/useReadings';
-import type { ReadingWithMeterAndUser } from 'modules/readings/types/reading.types';
+import type { ReadingWithMeter } from 'modules/readings/types/reading.types';
 import { getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
 
 type DeleteReadingDialogProps = {
   onClose: () => void;
   open: boolean;
-  reading?: ReadingWithMeterAndUser | null;
+  reading?: ReadingWithMeter | null;
 };
 
 export default function DeleteReadingDialog({ onClose, open, reading }: DeleteReadingDialogProps) {

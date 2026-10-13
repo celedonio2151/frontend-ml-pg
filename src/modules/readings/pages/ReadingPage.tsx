@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import AddRounded from '@mui/icons-material/AddRounded';
+import CalculateRounded from '@mui/icons-material/CalculateRounded';
 import DeleteRounded from '@mui/icons-material/DeleteRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
 import RefreshRounded from '@mui/icons-material/RefreshRounded';
@@ -14,15 +15,13 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { ColumnDef } from '@tanstack/react-table';
 
+import BalanceSimulatorDialog from 'components/BalanceSimulator/BalanceSimulatorDialog';
 import type { DataTableServerSide as ServerSideConfig } from 'components/MainTableServerSide/DataTableServerSide';
 import DataTableServerSide from 'components/MainTableServerSide/DataTableServerSide';
 import DeleteReadingDialog from 'modules/readings/components/DeleteReadingDialog';
 import ReadingFormDialog from 'modules/readings/components/ReadingFormDialog';
 import { useReadings } from 'modules/readings/hooks/useReadings';
-import type {
-  ReadingWithMeter,
-  ReadingWithMeterAndUser,
-} from 'modules/readings/types/reading.types';
+import type { ReadingWithMeter } from 'modules/readings/types/reading.types';
 import paths from 'router/paths';
 import { useDebounce } from 'shared/hooks/useDebounce';
 import { useTableServerSide } from 'shared/hooks/useTableServerSide';
@@ -39,15 +38,21 @@ export default function ReadingPage() {
   const navigate = useNavigate();
   const [formReading, setFormReading] = useState<ReadingWithMeter | undefined>(undefined);
   const [formOpen, setFormOpen] = useState(false);
-  const [deleteReading, setDeleteReading] = useState<ReadingWithMeterAndUser | null>(null);
+  const [deleteReading, setDeleteReading] = useState<ReadingWithMeter | null>(null);
+  const [simulatorOpen, setSimulatorOpen] = useState(false);
+  const [columnFilters, setColumnFilters] = useState<Array<{ id: string; value: unknown }>>([]);
 
   // 1. Hook de estado server-side
-  const { page, pageSize, search, sortBy, serverSideProps } = useTableServerSide(10, [
+  const { page, pageSize, search, sortBy, serverSideProps, resetPage } = useTableServerSide(10, [
     { order: 'desc', whom: 'date' },
   ]);
 
   // 2. Debounce para la busqueda
   const debouncedSearch = useDebounce(search, 500);
+
+  const isRolloverFilter = columnFilters.find((f) => f.id === 'isRollover')?.value as
+    | boolean
+    | undefined;
 
   // 3. Query con todos los parametros del servidor
   const readingsParams = useMemo(
@@ -56,8 +61,9 @@ export default function ReadingPage() {
       page,
       sortBy,
       q: debouncedSearch,
+      isRollover: isRolloverFilter,
     }),
-    [pageSize, page, sortBy, debouncedSearch],
+    [pageSize, page, sortBy, debouncedSearch, isRolloverFilter],
   );
 
   const readingsQuery = useReadings(readingsParams);
@@ -68,8 +74,12 @@ export default function ReadingPage() {
     () => ({
       ...serverSideProps,
       totalRows: readingsQuery.data?.meta?.total ?? 0,
+      onColumnFiltersChange: (newFilters) => {
+        setColumnFilters(newFilters);
+        resetPage();
+      },
     }),
-    [serverSideProps, readingsQuery.data?.meta?.total],
+    [serverSideProps, readingsQuery.data?.meta?.total, resetPage],
   );
 
   // Handlers
@@ -95,7 +105,7 @@ export default function ReadingPage() {
     [navigate],
   );
 
-  const columns = useMemo<ColumnDef<ReadingWithMeterAndUser, unknown>[]>(
+  const columns = useMemo<ColumnDef<ReadingWithMeter, unknown>[]>(
     () => [
       {
         accessorFn: (row) => `${row.ownerName} ${row.ownerSurname} ${row.ownerCi}`,
@@ -135,7 +145,7 @@ export default function ReadingPage() {
         enableColumnFilter: false,
         cell: ({ getValue }) => (
           <Typography variant="body2" sx={{ fontWeight: 800 }}>
-            {formateDate(getValue<string>(), 'DD MMM YYYY HH:mm')}
+            {formateDate(getValue<string>(), 'DD MMM YYYY')}
           </Typography>
         ),
       },
@@ -299,7 +309,7 @@ export default function ReadingPage() {
         </Alert>
       ) : null}
 
-      <DataTableServerSide<ReadingWithMeterAndUser>
+      <DataTableServerSide<ReadingWithMeter>
         serverSide={serverSideConfig}
         ariaLabel="tabla de lecturas"
         columns={columns}
@@ -323,6 +333,13 @@ export default function ReadingPage() {
             >
               Refrescar
             </Button>
+            <Button
+              onClick={() => setSimulatorOpen(true)}
+              startIcon={<CalculateRounded />}
+              variant="outlined"
+            >
+              Simular saldo
+            </Button>
             <Button onClick={handleCreate} startIcon={<AddRounded />} variant="contained">
               Nueva lectura
             </Button>
@@ -336,6 +353,7 @@ export default function ReadingPage() {
         open={Boolean(deleteReading)}
         reading={deleteReading}
       />
+      <BalanceSimulatorDialog onClose={() => setSimulatorOpen(false)} open={simulatorOpen} />
     </Stack>
   );
 }

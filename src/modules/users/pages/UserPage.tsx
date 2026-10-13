@@ -233,14 +233,14 @@ export default function UserPage() {
         },
       },
       {
-        accessorFn: (row) => row.meters.length,
+        accessorFn: (row) => row.meters?.length,
         id: 'meters',
         header: 'Medidores',
         enableColumnFilter: false,
         meta: { filterVariant: 'number' },
         cell: ({ getValue }) => (
           <Typography color="primary.light" variant="body2" sx={{ fontWeight: 850 }}>
-            {getValue<number>()}
+            {getValue<number | undefined>() ?? '—'}
           </Typography>
         ),
       },

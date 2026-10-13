@@ -5,8 +5,9 @@ export type Meeting = {
   content: string;
   createdAt: string;
   deletedAt?: string | null;
-  documentUrl?: string;
+  documentUrl?: string | null;
   id: string;
+  /** La API actual ya no lo devuelve; se deja opcional mientras el backend se actualiza. */
   isDeleted?: boolean;
   meetingDate: string;
   title: string;
@@ -29,6 +30,8 @@ export type MeetingsListParams = {
   q?: string;
   sortBy?: SortParam[];
   withDeleted?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
 };
 
 export type MeetingsList = PaginatedData<Meeting>;

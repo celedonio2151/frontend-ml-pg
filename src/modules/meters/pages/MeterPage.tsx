@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import AddRounded from '@mui/icons-material/AddRounded';
 import DeleteRounded from '@mui/icons-material/DeleteRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
+import InsightsRounded from '@mui/icons-material/InsightsRounded';
 import RefreshRounded from '@mui/icons-material/RefreshRounded';
 import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
 
@@ -16,6 +17,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useNavigate } from 'react-router';
 
 import type { DataTableServerSide as ServerSideConfig } from 'components/MainTableServerSide/DataTableServerSide';
 import DataTableServerSide from 'components/MainTableServerSide/DataTableServerSide';
@@ -24,12 +26,14 @@ import DeleteMeterDialog from 'modules/meters/components/DeleteMeterDialog';
 import MeterFormDialog from 'modules/meters/components/MeterFormDialog';
 import { useMeters } from 'modules/meters/hooks/useMeters';
 import type { MeterWithUser } from 'modules/meters/types/meter.types';
+import paths from 'router/paths';
 import { useDebounce } from 'shared/hooks/useDebounce';
 import { useTableServerSide } from 'shared/hooks/useTableServerSide';
 import StatusPill from 'shared/ui/aqua/StatusPill';
 import { getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
 
 export default function MeterPage() {
+  const navigate = useNavigate();
   const [formMeter, setFormMeter] = useState<MeterWithUser | undefined>(undefined);
   const [formOpen, setFormOpen] = useState(false);
   const [deleteMeter, setDeleteMeter] = useState<MeterWithUser | null>(null);
@@ -205,6 +209,19 @@ export default function MeterPage() {
         meta: { align: 'right' },
         cell: ({ row }) => (
           <Stack direction="row" spacing={0.75} sx={{ justifyContent: 'flex-end' }}>
+            <Tooltip title="Ver analítica de consumo">
+              <IconButton
+                color="primary"
+                onClick={() =>
+                  void navigate(
+                    `${paths.admin.reports}?tab=consumption&meterId=${encodeURIComponent(row.original.id)}`,
+                  )
+                }
+                size="small"
+              >
+                <InsightsRounded fontSize="small" />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Cambiar Propietario">
               <IconButton
                 color="secondary"
@@ -228,7 +245,7 @@ export default function MeterPage() {
         ),
       },
     ],
-    [handleEdit],
+    [handleEdit, navigate],
   );
 
   const subtitle = metersQuery.isLoading

@@ -24,7 +24,7 @@ import { useInvoices } from 'modules/invoices/hooks/useInvoices';
 import { invoicesService } from 'modules/invoices/services/invoices.service';
 import type {
   Invoice,
-  InvoiceStatus,
+  InvoiceStatusType,
   InvoiceWithReadingMeter,
 } from 'modules/invoices/types/invoice.types';
 import paths from 'router/paths';
@@ -32,7 +32,7 @@ import { useDebounce } from 'shared/hooks/useDebounce';
 import { useTableServerSide } from 'shared/hooks/useTableServerSide';
 import StatusPill from 'shared/ui/aqua/StatusPill';
 import { getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
-import { formatCurrency } from 'shared/utils/formatters';
+import { formatCurrency, formateDate } from 'shared/utils/formatters';
 
 export default function InvoicePage() {
   const navigate = useNavigate();
@@ -75,7 +75,7 @@ export default function InvoicePage() {
     }
   }, []);
 
-  const getStatusProps = (status: InvoiceStatus) => {
+  const getStatusProps = (status: InvoiceStatusType) => {
     switch (status) {
       case 'PAID':
         return { label: 'Pagada', tone: 'success' as const, pulse: false };
@@ -100,11 +100,21 @@ export default function InvoicePage() {
         ),
       },
       {
+        accessorKey: 'reading.date',
+        header: 'Fecha lectura',
+        enableColumnFilter: false,
+        cell: ({ getValue }) => (
+          <Typography variant="body2" color="primary.light" sx={{ fontWeight: 800 }}>
+            {formateDate(getValue<string>(), 'DD MMM YYYY')}
+          </Typography>
+        ),
+      },
+      {
         accessorKey: 'status',
         header: 'Estado',
         enableColumnFilter: false,
         cell: ({ getValue }) => {
-          const status = getValue<InvoiceStatus>();
+          const status = getValue<InvoiceStatusType>();
           const props = getStatusProps(status);
           return <StatusPill {...props} />;
         },
@@ -125,7 +135,7 @@ export default function InvoicePage() {
               variant="caption"
               sx={{ fontFamily: 'JetBrains Mono, Consolas, monospace', fontWeight: 600 }}
             >
-              Medidor #{row.original.reading.meter.meterNumber}
+              Medidor #{row.original.meter.meterNumber}
             </Typography>
           </Stack>
         ),

@@ -19,8 +19,11 @@ export function useInvoices(params: InvoicesListParams = {}) {
 
 export function useInvoice(id?: string) {
   return useQuery({
-    queryKey: invoicesQueryKeys.detail(id),
-    queryFn: () => invoicesService.findOne(id),
+    queryKey: invoicesQueryKeys.detail(id!),
+    queryFn: () => {
+      if (!id) throw new Error('Invoice ID is required');
+      return invoicesService.findOne(id);
+    },
     enabled: Boolean(id),
   });
 }

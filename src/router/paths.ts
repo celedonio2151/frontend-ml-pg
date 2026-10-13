@@ -29,8 +29,10 @@ export default {
     directiva: `${rootPaths.pageRoot}/admin/directiva`,
     treasury: `${rootPaths.pageRoot}/admin/treasury`,
     expenses: `${rootPaths.pageRoot}/admin/expenses`,
+    reports: `${rootPaths.pageRoot}/admin/reports`,
     settings: `${rootPaths.pageRoot}/admin/settings`,
     apidocs: `${rootPaths.pageRoot}/admin/api-docs`,
+    myAccount: `${rootPaths.pageRoot}/admin/my-account`,
   },
 
   client: {

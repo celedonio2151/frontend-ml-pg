@@ -1,5 +1,5 @@
 import type { Invoice } from 'modules/invoices/types/invoice.types';
-import type { Meter, MeterWithUser } from 'modules/meters/types/meter.types';
+import type { Meter } from 'modules/meters/types/meter.types';
 import type { PaginatedData, SortParam } from 'shared/types/api-reponse';
 
 export type MonthValue = {
@@ -17,31 +17,35 @@ export type Reading = {
   ownerSurname: string;
   cubicMeters: number;
   balance: number;
-  description: string;
+  description: string | null;
   isRollover: boolean;
   beforeMonth: MonthValue;
   lastMonth: MonthValue;
-  meterImage: string;
+  meterImage: string | null;
   meterId: string;
+  registeredById?: string | null;
+  updatedById?: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
 };
 
-export type ReadingWithMeterAndUser = Reading & {
-  meter: MeterWithUser;
-};
+/**
+ * Relaciones que el backend solo devuelve si se piden con `include`. El
+ * propietario al momento de la lectura siempre viene en ownerCi/Name/Surname,
+ * por eso el medidor anidado ya no trae `user`.
+ */
+export const READING_LIST_INCLUDE = ['meter'] as const;
+export const READING_DETAIL_INCLUDE = ['meter', 'invoice'] as const;
 
-export type ReadingWithInvoice = Reading & {
-  invoice: Invoice;
-};
-
+/** Lectura con `include=meter`. */
 export type ReadingWithMeter = Reading & {
   meter: Meter;
 };
 
-export type ReadingWithMeterUserInvoice = Reading & {
-  meter: MeterWithUser;
-  invoice: Invoice;
+/** Lectura con `include=meter,invoice`. La factura puede no existir aún. */
+export type ReadingWithMeterInvoice = Reading & {
+  meter: Meter;
+  invoice?: Invoice | null;
 };
 
 export type CreateReadingDto = {
@@ -71,6 +75,13 @@ export type ReadingsListParams = {
   q?: string;
   sortBy?: SortParam[];
   withDeleted?: boolean;
+  isRollover?: boolean;
+  meterNumber?: number;
 };
 
-export type ReadingsList = PaginatedData<ReadingWithMeterAndUser>;
+export type ReadingsList = PaginatedData<ReadingWithMeter>;
+
+export type SimulatedBalance = {
+  cubicMeters: number;
+  balance: number;
+};

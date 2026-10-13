@@ -1,14 +1,16 @@
-import type {
-  CreateReadingDto,
-  Reading,
-  ReadingsList,
-  ReadingsListParams,
-  ReadingWithInvoice,
-  ReadingWithMeterUserInvoice,
-  UpdateReadingDto,
+import {
+  READING_DETAIL_INCLUDE,
+  READING_LIST_INCLUDE,
+  type CreateReadingDto,
+  type Reading,
+  type ReadingsList,
+  type ReadingsListParams,
+  type ReadingWithMeterInvoice,
+  type SimulatedBalance,
+  type UpdateReadingDto,
 } from 'modules/readings/types/reading.types';
 import { httpClient } from 'shared/lib/http-client';
-import { buildListParams } from 'shared/utils/buildListParams';
+import { buildListParams, includeQuery } from 'shared/utils/buildListParams';
 
 const READINGS_ENDPOINT = '/readings';
 
@@ -25,8 +27,10 @@ function buildReadingsListParams(params: ReadingsListParams = {}) {
   if (params.meterId) base.meterId = params.meterId;
   if (params.dateFrom) base.dateFrom = params.dateFrom;
   if (params.dateTo) base.dateTo = params.dateTo;
+  if (params.isRollover !== undefined) base.isRollover = String(params.isRollover);
+  if (params.meterNumber !== undefined) base.meterNumber = String(params.meterNumber);
 
-  return buildListParams(base, params.sortBy);
+  return buildListParams(base, params.sortBy, READING_LIST_INCLUDE);
 }
 
 export const readingsService = {
@@ -40,13 +44,17 @@ export const readingsService = {
   },
 
   findOne: (id: string) =>
-    httpClient.get<ReadingWithMeterUserInvoice>(`${READINGS_ENDPOINT}/${id}`),
+    httpClient.get<ReadingWithMeterInvoice>(
+      `${READINGS_ENDPOINT}/${id}${includeQuery(READING_DETAIL_INCLUDE)}`,
+    ),
 
-  create: (payload: CreateReadingDto) =>
-    httpClient.post<ReadingWithInvoice>(READINGS_ENDPOINT, payload),
+  create: (payload: CreateReadingDto) => httpClient.post<Reading>(READINGS_ENDPOINT, payload),
 
   update: (id: string, payload: UpdateReadingDto) =>
     httpClient.patch<Reading>(`${READINGS_ENDPOINT}/${id}`, payload),
 
   remove: (id: string) => httpClient.delete<Reading>(`${READINGS_ENDPOINT}/${id}`),
+
+  simulateBalance: (cubicMeters: number | null) =>
+    httpClient.get<SimulatedBalance>(`${READINGS_ENDPOINT}/balance?cubicMeters=${cubicMeters}`),
 } as const;

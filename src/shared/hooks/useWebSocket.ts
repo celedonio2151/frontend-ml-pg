@@ -22,7 +22,7 @@ export function useWebSocket(
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState(null);
   const websocketRef = useRef<WebSocket | null>(null);
-  const reconnectTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const connect = useCallback(() => {
     websocketRef.current = new WebSocket(url);

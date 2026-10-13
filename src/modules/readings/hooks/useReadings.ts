@@ -20,11 +20,14 @@ export function useReadings(params: ReadingsListParams = {}) {
   });
 }
 
-export function useReading(id: string) {
+export function useReading(id?: string) {
   return useQuery({
     enabled: Boolean(id),
-    queryKey: readingsQueryKeys.detail(id),
-    queryFn: () => readingsService.findOne(id),
+    queryKey: readingsQueryKeys.detail(id!),
+    queryFn: () => {
+      if (!id) throw new Error('Reading ID is required');
+      return readingsService.findOne(id);
+    },
   });
 }
 
@@ -60,5 +63,14 @@ export function useDeleteReadingMutation() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: readingsQueryKeys.lists() });
     },
+  });
+}
+
+export function useSimulateBalance(cubicMeters: number | null) {
+  return useQuery({
+    queryKey: ['balance-simulator', cubicMeters],
+    queryFn: () => readingsService.simulateBalance(cubicMeters),
+    enabled: cubicMeters !== null && cubicMeters > 0,
+    staleTime: 0,
   });
 }

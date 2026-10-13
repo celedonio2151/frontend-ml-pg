@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import AccountBalanceRounded from '@mui/icons-material/AccountBalanceRounded';
 import LocalAtmRounded from '@mui/icons-material/LocalAtmRounded';
@@ -16,6 +16,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 
 import FormDialog from 'components/FormDialog';
+import InvoiceQrPayment from 'modules/invoices/components/InvoiceQrPayment';
 import { usePayInvoiceMutation } from 'modules/invoices/hooks/useInvoices';
 import { payInvoiceSchema, type PayInvoiceValues } from 'modules/invoices/schemas/invoice.schemas';
 import type { Invoice } from 'modules/invoices/types/invoice.types';
@@ -48,6 +49,8 @@ export default function PayInvoiceDialog({ invoice, onClose, open }: PayInvoiceD
   });
 
   const { isPending, reset: resetMutation } = payMutation;
+  const paymentMethod = useWatch({ control, name: 'paymentMethod' });
+  const isQrMethod = paymentMethod === 'QR';
 
   useEffect(() => {
     if (open && invoice) {
@@ -86,6 +89,7 @@ export default function PayInvoiceDialog({ invoice, onClose, open }: PayInvoiceD
 
   return (
     <FormDialog
+      disableSubmit={isQrMethod}
       error={submitError}
       formId="pay-invoice-form"
       isSubmitting={payMutation.isPending}
@@ -94,7 +98,7 @@ export default function PayInvoiceDialog({ invoice, onClose, open }: PayInvoiceD
       onSubmit={onSubmit}
       open={open}
       title="Pagar factura"
-      submitLabel="Confirmar pago"
+      submitLabel={isQrMethod ? 'Esperando pago...' : 'Confirmar pago'}
       submittingLabel="Procesando..."
     >
       <Stack spacing={3}>
@@ -193,25 +197,29 @@ export default function PayInvoiceDialog({ invoice, onClose, open }: PayInvoiceD
           )}
         />
 
-        <TextField
-          error={Boolean(errors.notes)}
-          fullWidth
-          helperText={errors.notes?.message}
-          label="Notas adicionales (opcional)"
-          multiline
-          rows={3}
-          size="medium"
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start" sx={{ mt: -5 }}>
-                  <NotesRounded fontSize="small" />
-                </InputAdornment>
-              ),
-            },
-          }}
-          {...register('notes')}
-        />
+        {isQrMethod && invoice?.id ? (
+          <InvoiceQrPayment active={open} invoiceId={invoice.id} />
+        ) : (
+          <TextField
+            error={Boolean(errors.notes)}
+            fullWidth
+            helperText={errors.notes?.message}
+            label="Notas adicionales (opcional)"
+            multiline
+            rows={3}
+            size="medium"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start" sx={{ mt: -5 }}>
+                    <NotesRounded fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            {...register('notes')}
+          />
+        )}
       </Stack>
     </FormDialog>
   );

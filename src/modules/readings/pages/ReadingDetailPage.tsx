@@ -15,16 +15,16 @@ import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
 import type { ElementType, ReactNode } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import ReadingFormDialog from 'modules/readings/components/ReadingFormDialog';
 import { useReading } from 'modules/readings/hooks/useReadings';
+import paths from 'router/paths';
 import AquaPanel from 'shared/ui/aqua/AquaPanel';
 import SectionHeader from 'shared/ui/aqua/SectionHeader';
 import StatusPill from 'shared/ui/aqua/StatusPill';
-import paths from 'router/paths';
 import { getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
 import { formatCubicMeters, formatCurrency, formateDate } from 'shared/utils/formatters';
 
@@ -132,6 +132,7 @@ export default function ReadingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
+  if (!id) navigate(paths.admin.readings, { replace: true });
 
   const readingQuery = useReading(id);
   const reading = readingQuery.data;
@@ -332,7 +333,7 @@ export default function ReadingDetailPage() {
                 ) : (
                   <Box
                     component="img"
-                    src={reading?.meterImage}
+                    src={reading?.meterImage ?? undefined}
                     alt="Imagen del medidor"
                     sx={{
                       width: '100%',

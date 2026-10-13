@@ -18,6 +18,10 @@ export type User = {
   status: boolean;
 };
 
+/** Relaciones que el backend solo devuelve si se piden con `include`. */
+export const USER_INCLUDE = ['roles'] as const;
+
+/** Usuario con `include=roles`. */
 export type UserWithRoles = User & {
   roles: Role[];
 };
@@ -26,21 +30,26 @@ export type UserWithMeter = User & {
   meters: Meter[];
 };
 
+/**
+ * La API actual ya no devuelve `meters` en usuarios (solo `roles` vía include);
+ * se deja opcional porque el backend aún se está actualizando.
+ */
 export type UserWithRolesAndMeters = UserWithRoles & {
-  meters: Meter[];
+  meters?: Meter[];
 };
 
 export type CreateUserDto = {
   birthDate?: string;
   ci: string;
-  email: string;
+  email?: string;
   name: string;
   phoneNumber?: string;
   surname: string;
 };
 
 export type UpdateUserDto = Partial<Pick<CreateUserDto, 'birthDate' | 'email' | 'phoneNumber'>> & {
-  rolIds?: string[];
+  profileImg?: string;
+  roleIds?: string[];
 };
 
 export type UsersListParams = {

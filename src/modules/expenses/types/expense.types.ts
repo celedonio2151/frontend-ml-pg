@@ -26,21 +26,21 @@ export type Expense = {
   id: string;
   createdAt: string;
   updatedAt: string;
-  isDeleted: boolean;
-  deletedAt?: string;
   category: ExpenseCategoryType;
   amount: number;
   description: string;
-  receiptNumber?: string;
-  receiptImage?: string;
+  receiptNumber?: string | null;
+  receiptImage?: string | null;
   expenseDate: string;
   status: ExpenseStatusType;
-  rejectionReason?: string;
-  reviewedAt?: string;
+  rejectionReason?: string | null;
+  reviewedAt?: string | null;
   registeredById: string;
-  reviewedById?: string;
+  reviewedById?: string | null;
+  /** Solo con `include=registeredBy`. */
   registeredBy?: User;
-  reviewedBy?: User;
+  /** Solo con `include=reviewedBy`; null mientras el gasto está pendiente. */
+  reviewedBy?: User | null;
 };
 
 export type CreateExpenseDto = {
@@ -65,6 +65,7 @@ export type ExpensesListParams = {
   limit?: number;
   page?: number;
   q?: string;
+  registeredById?: string;
   sortBy?: SortParam[];
   status?: ExpenseStatusType;
   withDeleted?: boolean;

@@ -1,12 +1,13 @@
-import { httpClient } from 'shared/lib/http-client';
-import { buildListParams } from 'shared/utils/buildListParams';
-import type {
-  CreateUserDto,
-  UpdateUserDto,
-  UsersList,
-  UsersListParams,
-  UserWithRolesAndMeters,
+import {
+  USER_INCLUDE,
+  type CreateUserDto,
+  type UpdateUserDto,
+  type UsersList,
+  type UsersListParams,
+  type UserWithRolesAndMeters,
 } from 'modules/users/types/user.types';
+import { httpClient } from 'shared/lib/http-client';
+import { buildListParams, includeQuery } from 'shared/utils/buildListParams';
 
 const USERS_ENDPOINT = '/users';
 
@@ -20,8 +21,8 @@ function buildUsersListParams(params: UsersListParams = {}) {
   if (params.ci) base.ci = params.ci;
   if (params.roleName) base.roleName = params.roleName;
   if (params.status !== undefined) base.status = String(params.status);
-  
-  return buildListParams(base, params.sortBy);
+
+  return buildListParams(base, params.sortBy, USER_INCLUDE);
 }
 
 export const usersService = {
@@ -31,13 +32,15 @@ export const usersService = {
 
     return httpClient.get<UsersList>(query ? `${USERS_ENDPOINT}?${query}` : USERS_ENDPOINT);
   },
-  findOne: (id: string) => httpClient.get<UserWithRolesAndMeters>(`${USERS_ENDPOINT}/${id}`),
+  findOne: (id: string) =>
+    httpClient.get<UserWithRolesAndMeters>(`${USERS_ENDPOINT}/${id}${includeQuery(USER_INCLUDE)}`),
 
   create: (payload: CreateUserDto) =>
     httpClient.post<UserWithRolesAndMeters>(USERS_ENDPOINT, payload),
 
-  update: (id: string, payload: UpdateUserDto) =>
-    httpClient.patch<UserWithRolesAndMeters>(`${USERS_ENDPOINT}/${id}`, payload),
+  update: (id: string, payload: UpdateUserDto) => {
+    return httpClient.patch<UserWithRolesAndMeters>(`${USERS_ENDPOINT}/${id}`, payload);
+  },
 
   remove: (id: string) => httpClient.delete<UserWithRolesAndMeters>(`${USERS_ENDPOINT}/${id}`),
 } as const;

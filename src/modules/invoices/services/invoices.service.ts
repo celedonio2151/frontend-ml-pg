@@ -1,14 +1,15 @@
 import { useAuthStore } from 'modules/auth/stores/auth.store';
-import type {
-  Invoice,
-  InvoiceWithReadingMeter,
-  InvoicesList,
-  InvoicesListParams,
-  PayInvoiceDto,
+import {
+  INVOICE_INCLUDE,
+  type Invoice,
+  type InvoiceWithReadingMeter,
+  type InvoicesList,
+  type InvoicesListParams,
+  type PayInvoiceDto,
 } from 'modules/invoices/types/invoice.types';
 import { env } from 'shared/config/env';
 import { httpClient } from 'shared/lib/http-client';
-import { buildListParams } from 'shared/utils/buildListParams';
+import { buildListParams, includeQuery } from 'shared/utils/buildListParams';
 import type { InvoicesDelinquent } from '../types/invoice.morosos.types';
 
 const INVOICES_ENDPOINT = '/invoices';
@@ -20,8 +21,15 @@ function buildInvoicesListParams(params: InvoicesListParams = {}) {
   if (params.page) base.page = String(params.page);
   if (params.limit) base.limit = String(params.limit);
   if (params.withDeleted !== undefined) base.withDeleted = String(params.withDeleted);
+  if (params.status) base.status = params.status;
+  if (params.isPaid !== undefined) base.isPaid = String(params.isPaid);
+  if (params.paymentMethod) base.paymentMethod = params.paymentMethod;
+  if (params.meterId) base.meterId = params.meterId;
+  if (params.dueFrom) base.dueFrom = params.dueFrom;
+  if (params.dueTo) base.dueTo = params.dueTo;
 
-  return buildListParams(base, params.sortBy);
+  // `q` busca por el propietario de la lectura, por eso siempre se pide `reading`.
+  return buildListParams(base, params.sortBy, INVOICE_INCLUDE);
 }
 
 export const invoicesService = {
@@ -34,7 +42,10 @@ export const invoicesService = {
     );
   },
 
-  findOne: (id: string) => httpClient.get<InvoiceWithReadingMeter>(`${INVOICES_ENDPOINT}/${id}`),
+  findOne: (id: string) =>
+    httpClient.get<InvoiceWithReadingMeter>(
+      `${INVOICES_ENDPOINT}/${id}${includeQuery(INVOICE_INCLUDE)}`,
+    ),
 
   payInvoice: (id: string, payload: PayInvoiceDto) =>
     httpClient.patch<Invoice>(`${INVOICES_ENDPOINT}/${id}/pay`, payload),

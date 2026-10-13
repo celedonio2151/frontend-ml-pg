@@ -9,27 +9,26 @@ const optionalDate = z.string().trim().optional();
 export const createUserSchema = z.object({
   birthDate: optionalDate,
   ci: requiredText('La cedula'),
-  email: optionalText.refine(
-    (val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
-    { message: 'Correo invalido' }
-  ),
+  email: optionalText.refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+    message: 'Correo invalido',
+  }),
   name: requiredText('El nombre'),
   phoneNumber: optionalText,
   surname: requiredText('El apellido'),
+  // Solo se usa en modo edición, pero debe estar en el schema: zodResolver
+  // descarta los campos que no declara y los roles nunca llegarían al submit.
+  roleIds: z.array(z.string()).optional(),
 });
 
 export const updateUserSchema = z.object({
   birthDate: optionalDate,
-  email: optionalText.refine(
-    (val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
-    { message: 'Correo invalido' }
-  ),
+  email: optionalText.refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+    message: 'Correo invalido',
+  }),
   phoneNumber: optionalText,
-  rolIds: z.array(z.string()).optional(),
+  roleIds: z.array(z.string()).optional(),
 });
 
 export type CreateUserFormValues = z.infer<typeof createUserSchema>;
 export type UpdateUserFormValues = z.infer<typeof updateUserSchema>;
-export type UserFormValues = CreateUserFormValues & {
-  rolIds?: string[];
-};
+export type UserFormValues = CreateUserFormValues;

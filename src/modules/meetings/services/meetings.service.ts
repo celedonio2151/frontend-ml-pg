@@ -17,6 +17,8 @@ function buildMeetingsListParams(params: MeetingsListParams = {}) {
   if (params.page) base.page = String(params.page);
   if (params.limit) base.limit = String(params.limit);
   if (params.withDeleted !== undefined) base.withDeleted = String(params.withDeleted);
+  if (params.dateFrom) base.dateFrom = params.dateFrom;
+  if (params.dateTo) base.dateTo = params.dateTo;
 
   return buildListParams(base, params.sortBy);
 }

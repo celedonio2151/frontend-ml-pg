@@ -45,8 +45,8 @@ const emptyValues: UserFormValues = {
   surname: '',
 };
 
-const toFormValues = (user?: UserWithRolesAndMeters | null): UserFormValues =>
-  user
+const toFormValues = (user?: UserWithRolesAndMeters | null): UserFormValues => {
+  return user
     ? {
         birthDate: user.birthDate ?? '',
         ci: user.ci,
@@ -54,9 +54,10 @@ const toFormValues = (user?: UserWithRolesAndMeters | null): UserFormValues =>
         name: user.name,
         phoneNumber: user.phoneNumber ?? '',
         surname: user.surname,
-        rolIds: user.roles?.map((r) => r.id) ?? [],
+        roleIds: user.roles?.map((r) => r.id) ?? [],
       }
     : emptyValues;
+};
 
 const cleanOptional = (value?: string) => {
   const trimmed = value?.trim();
@@ -68,7 +69,7 @@ function toCreatePayload(values: UserFormValues): CreateUserDto {
   return {
     birthDate: cleanOptional(values.birthDate),
     ci: values.ci.trim(),
-    email: values.email.trim(),
+    email: values.email?.trim() ?? undefined,
     name: values.name.trim(),
     phoneNumber: cleanOptional(values.phoneNumber),
     surname: values.surname.trim(),
@@ -80,7 +81,7 @@ function toUpdatePayload(values: UserFormValues): UpdateUserDto {
     birthDate: cleanOptional(values.birthDate),
     email: values.email?.trim() || undefined,
     phoneNumber: cleanOptional(values.phoneNumber),
-    rolIds: values.rolIds,
+    roleIds: values.roleIds,
   };
 }
 
@@ -127,7 +128,7 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
     // Validate email for ADMIN role
     if (isEditMode) {
       const adminRole = roles.find((r) => r.name === 'ADMIN');
-      const hasAdminRole = adminRole && values.rolIds?.includes(adminRole.id);
+      const hasAdminRole = adminRole && values.roleIds?.includes(adminRole.id);
 
       if (hasAdminRole && !values.email?.trim()) {
         setError('email', { message: 'El correo es obligatorio para los administradores' });
@@ -245,16 +246,16 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
         {isEditMode && (
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <Controller
-              name="rolIds"
+              name="roleIds"
               control={control}
               defaultValue={user?.roles.map((r) => r.id) ?? []}
               render={({ field, fieldState }) => (
                 <FormControl fullWidth error={!!fieldState.error}>
-                  <InputLabel id="rolIds-select-label">Roles</InputLabel>
+                  <InputLabel id="roleIds-select-label">Roles</InputLabel>
 
                   <Select
                     {...field}
-                    labelId="rolIds-select-label"
+                    labelId="roleIds-select-label"
                     label="Roles"
                     multiple
                     value={field.value ?? []}
