@@ -2,9 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
-import Autocomplete from '@mui/material/Autocomplete';
-import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
@@ -22,7 +19,7 @@ import {
   type BoardDirectorFormValues,
 } from 'modules/directiva/schemas/directiva.schemas';
 import type { BoardDirector } from 'modules/directiva/types/directiva.types';
-import { useUsers } from 'modules/users/hooks/useUsers';
+import UserAutocomplete from 'modules/users/components/UserAutocomplete';
 import { applyApiFieldErrors, getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
 
 type DirectivaFormDialogProps = {
@@ -52,9 +49,6 @@ export default function DirectivaFormDialog({
   const createMutation = useCreateBoardDirectorMutation();
   const updateMutation = useUpdateBoardDirectorMutation();
   const isSaving = createMutation.isPending || updateMutation.isPending;
-
-  const usersQuery = useUsers({ limit: 1000, sortBy: [{ whom: 'name', order: 'asc' }] });
-  const users = usersQuery.data?.items ?? [];
 
   const {
     control,
@@ -138,36 +132,14 @@ export default function DirectivaFormDialog({
           control={control}
           name="userId"
           render={({ field }) => (
-            <Autocomplete
-              options={users}
-              value={users.find((u) => u.id === field.value) ?? null}
-              onChange={(_, user) => field.onChange(user?.id ?? '')}
-              getOptionLabel={(user) => `${user.name} ${user.surname} CI: ${user.ci}`}
-              renderOption={(props, user) => {
-                const { key, ...optionProps } = props;
-                return (
-                  <Box key={key} component="li" {...optionProps}>
-                    <Avatar
-                      alt={`${user.name} ${user.surname}`}
-                      src={user.profileImg}
-                      sx={{ width: 36, height: 36, mr: 1.5 }}
-                    />
-                    <Stack spacing={0.25}>
-                      <span>
-                        {user.name} {user.surname}
-                      </span>
-                    </Stack>
-                  </Box>
-                );
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Usuario"
-                  error={Boolean(errors.userId)}
-                  helperText={errors.userId?.message}
-                />
-              )}
+            <UserAutocomplete
+              error={Boolean(errors.userId)}
+              helperText={errors.userId?.message}
+              initialUser={boardDirector?.user}
+              label="Usuario"
+              onBlur={field.onBlur}
+              onChange={field.onChange}
+              value={field.value}
             />
           )}
         />
@@ -178,6 +150,7 @@ export default function DirectivaFormDialog({
           fullWidth
           helperText={errors.positionRole?.message}
           label="Cargo"
+          size="medium"
           placeholder="Ej: Presidente, Secretario, Tesorero..."
         />
 
@@ -188,7 +161,9 @@ export default function DirectivaFormDialog({
             render={({ field }) => (
               <DatePicker
                 label="Fecha de inicio"
-                onChange={(value) => field.onChange(value?.isValid() ? value.format('YYYY-MM-DD') : '')}
+                onChange={(value) =>
+                  field.onChange(value?.isValid() ? value.format('YYYY-MM-DD') : '')
+                }
                 value={field.value ? dayjs(field.value) : null}
                 slotProps={{
                   textField: {
@@ -206,7 +181,9 @@ export default function DirectivaFormDialog({
             render={({ field }) => (
               <DatePicker
                 label="Fecha de fin"
-                onChange={(value) => field.onChange(value?.isValid() ? value.format('YYYY-MM-DD') : '')}
+                onChange={(value) =>
+                  field.onChange(value?.isValid() ? value.format('YYYY-MM-DD') : '')
+                }
                 value={field.value ? dayjs(field.value) : null}
                 slotProps={{
                   textField: {
@@ -227,6 +204,7 @@ export default function DirectivaFormDialog({
             <TextField
               error={Boolean(errors.order)}
               fullWidth
+              size="medium"
               helperText={errors.order?.message || 'Orden jerárquico; 1 es el cargo más alto'}
               label="Orden jerárquico"
               onChange={(e) => field.onChange(Number(e.target.value))}
@@ -243,6 +221,7 @@ export default function DirectivaFormDialog({
           helperText={errors.description?.message}
           label="Descripción (opcional)"
           multiline
+          size="medium"
           minRows={2}
         />
 
@@ -251,7 +230,9 @@ export default function DirectivaFormDialog({
           name="status"
           render={({ field }) => (
             <FormControlLabel
-              control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
+              control={
+                <Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />
+              }
               label="Designación habilitada"
             />
           )}

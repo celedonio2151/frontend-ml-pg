@@ -25,6 +25,7 @@ export default {
     invoices: `${rootPaths.pageRoot}/admin/invoices`,
     invoiceDetail: `${rootPaths.pageRoot}/admin/invoices/:id`,
     invoicesMorosos: `${rootPaths.pageRoot}/admin/invoices/morosos`,
+    tariffs: `${rootPaths.pageRoot}/admin/tariffs`,
     meetings: `${rootPaths.pageRoot}/admin/meetings`,
     directiva: `${rootPaths.pageRoot}/admin/directiva`,
     treasury: `${rootPaths.pageRoot}/admin/treasury`,

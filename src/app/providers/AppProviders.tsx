@@ -4,6 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import 'dayjs/locale/es';
 import { useUIStore } from 'shared/stores/ui.store';
 import { getThemeOptions } from 'theme';
 
@@ -96,7 +97,7 @@ function AppProviders({ children }: PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={appTheme}>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <LocalizationProvider adapterLocale="es" dateAdapter={AdapterDayjs}>
           <CssBaseline />
           {children}
         </LocalizationProvider>

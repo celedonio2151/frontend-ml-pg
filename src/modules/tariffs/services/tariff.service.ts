@@ -1,4 +1,4 @@
-import type { ReplaceTariffsDto, TariffsList } from 'modules/settings/types/tariff.types';
+import type { ReplaceTariffsDto, TariffsList } from 'modules/tariffs/types/tariff.types';
 import { httpClient } from 'shared/lib/http-client';
 
 const TARIFFS_ENDPOINT = '/tariffs';

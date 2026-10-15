@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { expensesService } from 'modules/expenses/services/expenses.service';
+import { treasuryQueryKeys } from 'modules/treasury/hooks/useTreasury';
 import type {
   CreateExpenseDto,
   ExpensesListParams,
@@ -23,11 +24,11 @@ export function useExpenses(params: ExpensesListParams = {}) {
   });
 }
 
-export function useExpense(id: string) {
+export function useExpense(id: string | undefined) {
   return useQuery({
     enabled: Boolean(id),
-    queryKey: expensesQueryKeys.detail(id),
-    queryFn: () => expensesService.findOne(id),
+    queryKey: expensesQueryKeys.detail(id ?? ''),
+    queryFn: () => expensesService.findOne(id as string),
   });
 }
 
@@ -80,6 +81,8 @@ export function useApproveExpenseMutation() {
     mutationFn: (id: string) => expensesService.approve(id),
     onSuccess: (expense) => {
       void queryClient.invalidateQueries({ queryKey: expensesQueryKeys.all });
+      // Aprobar registra el egreso en caja: saldo y movimientos de tesorería cambian.
+      void queryClient.invalidateQueries({ queryKey: treasuryQueryKeys.all });
       void queryClient.invalidateQueries({ queryKey: expensesQueryKeys.detail(expense.id) });
     },
   });

@@ -6,6 +6,7 @@ import DashboardRounded from '@mui/icons-material/DashboardRounded';
 import EventNoteRounded from '@mui/icons-material/EventNoteRounded';
 import GroupsRounded from '@mui/icons-material/GroupsRounded';
 import PeopleAltRounded from '@mui/icons-material/PeopleAltRounded';
+import PriceChangeRounded from '@mui/icons-material/PriceChangeRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded';
 import SavingsRoundedIcon from '@mui/icons-material/SavingsRounded';
@@ -56,6 +57,7 @@ const navSections: NavSection[] = [
       { label: 'Medidores', href: paths.admin.meters, icon: SpeedRounded },
       { label: 'Lecturas', href: paths.admin.readings, icon: WaterDropRounded, badge: '23' },
       { label: 'Facturas', href: paths.admin.invoices, icon: ReceiptRoundedIcon },
+      { label: 'Tarifas', href: paths.admin.tariffs, icon: PriceChangeRounded },
       { label: 'Gastos', href: paths.admin.expenses, icon: ReceiptLongRounded },
       { label: 'Tesoreria', href: paths.admin.treasury, icon: SavingsRoundedIcon },
       { label: 'Analítica', href: paths.admin.reports, icon: AnalyticsRounded },

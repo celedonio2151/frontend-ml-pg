@@ -97,6 +97,7 @@ export default function EditMyProfileDialog({ onClose, open, profile }: EditMyPr
           {...register('email')}
           error={Boolean(errors.email)}
           fullWidth
+          size="medium"
           helperText={errors.email?.message}
           label="Correo"
           type="email"
@@ -105,6 +106,7 @@ export default function EditMyProfileDialog({ onClose, open, profile }: EditMyPr
           {...register('phoneNumber')}
           error={Boolean(errors.phoneNumber)}
           fullWidth
+          size="medium"
           helperText={errors.phoneNumber?.message}
           label="Teléfono"
         />
@@ -114,7 +116,9 @@ export default function EditMyProfileDialog({ onClose, open, profile }: EditMyPr
           render={({ field }) => (
             <DatePicker
               label="Fecha de nacimiento"
-              onChange={(value) => field.onChange(value?.isValid() ? value.format('YYYY-MM-DD') : '')}
+              onChange={(value) =>
+                field.onChange(value?.isValid() ? value.format('YYYY-MM-DD') : '')
+              }
               value={field.value ? dayjs(field.value) : null}
               slotProps={{
                 textField: {

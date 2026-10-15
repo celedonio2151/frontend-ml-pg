@@ -1,246 +1,546 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 
-import AddRounded from '@mui/icons-material/AddRounded';
-import DeleteRounded from '@mui/icons-material/DeleteRounded';
+import AppsRounded from '@mui/icons-material/AppsRounded';
+import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
 import PriceChangeRounded from '@mui/icons-material/PriceChangeRounded';
+import RefreshRounded from '@mui/icons-material/RefreshRounded';
 import SaveRounded from '@mui/icons-material/SaveRounded';
+import SearchOffRounded from '@mui/icons-material/SearchOffRounded';
+import SearchRounded from '@mui/icons-material/SearchRounded';
+import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
+import ButtonBase from '@mui/material/ButtonBase';
+import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
+import Slide from '@mui/material/Slide';
+import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
 import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
 
-import BalanceSimulatorCard from 'components/BalanceSimulator/BalanceSimulatorCard';
-import { useReplaceTariffsMutation, useTariffs } from 'modules/settings/hooks/useTariffs';
-import { TariffTierKind, type TariffTierInput } from 'modules/settings/types/tariff.types';
+import { useAuthStore } from 'modules/auth/stores/auth.store';
+import SettingCard from 'modules/settings/components/SettingCard';
+import { useSettings, useUpdateSettingMutation } from 'modules/settings/hooks/useSettings';
+import { CATEGORY_META, FALLBACK_SECTION, getSettingMeta } from 'modules/settings/settings.meta';
+import {
+  SettingCategory,
+  type Setting,
+  type SettingCategoryType,
+} from 'modules/settings/types/setting.types';
+import { validateSettingValue } from 'modules/settings/utils/validateSetting';
+import paths from 'router/paths';
 import AquaPanel from 'shared/ui/aqua/AquaPanel';
+import SectionHeader from 'shared/ui/aqua/SectionHeader';
+import { getAquaTone, type AquaTone } from 'shared/ui/aqua/aquaTones';
 import { getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
 
-const emptyTier: TariffTierInput = { type: 'PER_M3', price: 0, upToM3: null };
+type CategoryFilter = 'ALL' | SettingCategoryType;
 
-function validateTiers(tiers: TariffTierInput[]): string | null {
-  if (tiers.length === 0) return 'Agrega al menos un tramo.';
+function groupBySection(items: Setting[]) {
+  const sections = new Map<string, Setting[]>();
+  items.forEach((setting) => {
+    const section = getSettingMeta(setting.settingKey).section;
+    sections.set(section, [...(sections.get(section) ?? []), setting]);
+  });
+  // "Otros" (claves no documentadas) siempre al final.
+  return [...sections.entries()].sort(
+    ([a], [b]) => Number(a === FALLBACK_SECTION) - Number(b === FALLBACK_SECTION),
+  );
+}
 
-  if (tiers.some((tier) => !(tier.price > 0))) {
-    return 'El precio de cada tramo debe ser mayor a 0.';
-  }
-
-  if (tiers.slice(1).some((tier) => tier.type === 'FIXED')) {
-    return 'Solo el primer tramo puede ser de monto fijo.';
-  }
-
-  const nonLast = tiers.slice(0, -1);
-  if (nonLast.some((tier) => !tier.upToM3 || tier.upToM3 <= 0)) {
-    return 'Todos los tramos deben tener un tope en m³, excepto el último.';
-  }
-
-  for (let i = 1; i < nonLast.length; i += 1) {
-    if ((nonLast[i].upToM3 ?? 0) <= (nonLast[i - 1].upToM3 ?? 0)) {
-      return 'El tope de cada tramo debe ser mayor al del tramo anterior.';
-    }
-  }
-
-  return null;
+function CategoryFilterCard({
+  active,
+  count,
+  description,
+  icon,
+  label,
+  onClick,
+  tone,
+}: {
+  active: boolean;
+  count: number;
+  description: string;
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  tone: AquaTone;
+}) {
+  return (
+    <ButtonBase
+      onClick={onClick}
+      sx={(theme) => {
+        const t = getAquaTone(theme, tone);
+        return {
+          p: 2,
+          gap: 1.5,
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          textAlign: 'left',
+          borderRadius: 3,
+          border: '1px solid',
+          borderColor: active ? t.accent : 'divider',
+          bgcolor: active ? t.surface : alpha(theme.palette.background.paper, 0.4),
+          boxShadow: active ? `0 10px 28px ${alpha(t.accent, 0.18)}` : 'none',
+          transition: 'all 180ms ease',
+          '&:hover': { borderColor: t.border, transform: 'translateY(-2px)' },
+        };
+      }}
+    >
+      <Box
+        sx={(theme) => {
+          const t = getAquaTone(theme, tone);
+          return {
+            width: 42,
+            height: 42,
+            flexShrink: 0,
+            borderRadius: 2,
+            display: 'grid',
+            placeItems: 'center',
+            color: active ? theme.palette.background.paper : t.accent,
+            bgcolor: active ? t.accent : t.surface,
+            transition: 'all 180ms ease',
+          };
+        }}
+      >
+        {icon}
+      </Box>
+      <Stack sx={{ minWidth: 0, flex: 1 }}>
+        <Stack direction="row" sx={{ alignItems: 'baseline', justifyContent: 'space-between' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+            {label}
+          </Typography>
+          <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.secondary' }}>
+            {count}
+          </Typography>
+        </Stack>
+        <Typography noWrap variant="caption" color="text.secondary">
+          {description}
+        </Typography>
+      </Stack>
+    </ButtonBase>
+  );
 }
 
 export default function SettingsPage() {
-  const tariffsQuery = useTariffs();
-  const replaceMutation = useReplaceTariffsMutation();
+  const settingsQuery = useSettings();
+  const updateMutation = useUpdateSettingMutation();
 
-  const [tiers, setTiers] = useState<TariffTierInput[]>([]);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const initializedRef = useRef(false);
+  const [filter, setFilter] = useState<CategoryFilter>('ALL');
+  const [search, setSearch] = useState('');
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
+  // PATCH /settings/{key} es solo para ADMIN; el resto de roles solo puede ver.
+  const isAdmin = useAuthStore(
+    (state) => state.user?.roles?.some((role) => role.name.toUpperCase() === 'ADMIN') ?? false,
+  );
+
+  const settings = useMemo(() => settingsQuery.data?.items ?? [], [settingsQuery.data]);
+  const settingsByKey = useMemo(() => new Map(settings.map((s) => [s.settingKey, s])), [settings]);
+
+  const dirtyKeys = useMemo(
+    () =>
+      Object.keys(drafts).filter((key) => {
+        const setting = settingsByKey.get(key);
+        return setting && drafts[key] !== setting.value;
+      }),
+    [drafts, settingsByKey],
+  );
+  const hasInvalid = dirtyKeys.some((key) => {
+    const setting = settingsByKey.get(key);
+    return setting ? Boolean(validateSettingValue(setting, drafts[key])) : false;
+  });
+
+  // Avisa al cerrar/recargar la pestaña si hay cambios sin guardar.
   useEffect(() => {
-    if (tariffsQuery.data && !initializedRef.current) {
-      initializedRef.current = true;
-      setTiers(
-        tariffsQuery.data.items.map((tier) => ({
-          type: tier.type,
-          price: tier.price,
-          upToM3: tier.upToM3,
-        })),
+    if (dirtyKeys.length === 0) return;
+    const handler = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [dirtyKeys.length]);
+
+  const counts = useMemo(() => {
+    const result: Record<string, number> = { ALL: settings.length };
+    settings.forEach((s) => (result[s.category] = (result[s.category] ?? 0) + 1));
+    return result;
+  }, [settings]);
+
+  // La lista es corta y no paginada: se trae una vez y se filtra en cliente.
+  const visibleGroups = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const filtered = settings.filter((s) => {
+      if (filter !== 'ALL' && s.category !== filter) return false;
+      if (!term) return true;
+      const meta = getSettingMeta(s.settingKey);
+      return [s.settingKey, s.value, s.description, meta.label, meta.section].some((text) =>
+        text.toLowerCase().includes(term),
       );
-    }
-  }, [tariffsQuery.data]);
+    });
 
-  const updateTier = (index: number, patch: Partial<TariffTierInput>) => {
-    setSaved(false);
-    setTiers((prev) => prev.map((tier, i) => (i === index ? { ...tier, ...patch } : tier)));
+    return SettingCategory.values
+      .map((category) => ({ category, items: filtered.filter((s) => s.category === category) }))
+      .filter((group) => group.items.length > 0);
+  }, [settings, filter, search]);
+
+  const handleChange = useCallback((key: string, value: string) => {
+    setDrafts((prev) => ({ ...prev, [key]: value }));
+    setServerErrors((prev) => {
+      if (!(key in prev)) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  const handleReset = useCallback((key: string) => {
+    setDrafts((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    setServerErrors((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  const handleDiscardAll = () => {
+    setDrafts({});
+    setServerErrors({});
   };
 
-  const addTier = () => {
-    setSaved(false);
-    setTiers((prev) => [...prev, { ...emptyTier }]);
-  };
+  const handleSaveAll = async () => {
+    if (dirtyKeys.length === 0 || hasInvalid) return;
+    setIsSaving(true);
 
-  const removeTier = (index: number) => {
-    setSaved(false);
-    setTiers((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSave = async () => {
-    setSaved(false);
-    const payload = tiers.map((tier, index) => ({
-      ...tier,
-      upToM3: index === tiers.length - 1 ? undefined : tier.upToM3,
-    }));
-
-    const validationError = validateTiers(payload);
-    if (validationError) {
-      setFormError(validationError);
-      return;
-    }
-
-    setFormError(null);
-    try {
-      await replaceMutation.mutateAsync({ tiers: payload });
-      setSaved(true);
-    } catch (error) {
-      setFormError(getApiErrorMessage(error, 'No se pudieron guardar las tarifas'));
-    }
-  };
-
-  if (tariffsQuery.isLoading) {
-    return (
-      <Stack sx={{ alignItems: 'center', p: 6 }} spacing={2}>
-        <CircularProgress />
-        <Typography color="text.secondary">Cargando tarifas...</Typography>
-      </Stack>
+    const results = await Promise.allSettled(
+      dirtyKeys.map((key) => {
+        const setting = settingsByKey.get(key)!;
+        const raw = drafts[key];
+        return updateMutation.mutateAsync({
+          key,
+          value: setting.valueType === 'INTEGER' ? raw.trim() : raw,
+        });
+      }),
     );
-  }
+
+    const failed: Record<string, string> = {};
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        failed[dirtyKeys[index]] = getApiErrorMessage(result.reason, 'No se pudo guardar');
+      }
+    });
+
+    // Solo quedan como borrador los que fallaron, con su error visible en la tarjeta.
+    setDrafts((prev) => Object.fromEntries(Object.entries(prev).filter(([key]) => key in failed)));
+    setServerErrors(failed);
+    setIsSaving(false);
+
+    const savedCount = dirtyKeys.length - Object.keys(failed).length;
+    if (savedCount > 0) {
+      setToast(savedCount === 1 ? 'Parámetro guardado' : `${savedCount} parámetros guardados`);
+    }
+  };
+
+  const availableCategories = SettingCategory.values.filter((c) => (counts[c] ?? 0) > 0);
 
   return (
-    <Stack spacing={2.5}>
-      <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-        <PriceChangeRounded color="primary" fontSize="large" />
-        <Stack>
-          <Typography variant="h5" sx={{ fontWeight: 800 }}>
-            Tarifas de Consumo
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Tramos usados para calcular el monto a pagar por consumo (m³).
-          </Typography>
-        </Stack>
-      </Stack>
+    <Stack spacing={3} sx={{ pb: dirtyKeys.length > 0 ? 12 : 0 }}>
+      <SectionHeader
+        eyebrow="Sistema"
+        title="Configuración"
+        subtitle="Los cambios se aplican en la siguiente operación que use el parámetro, sin reiniciar nada."
+        action={
+          <Stack direction="row" spacing={1}>
+            <Button
+              component={Link}
+              startIcon={<PriceChangeRounded />}
+              to={paths.admin.tariffs}
+              variant="text"
+            >
+              Tramos de tarifa
+            </Button>
+            <Button
+              disabled={settingsQuery.isFetching}
+              onClick={() => void settingsQuery.refetch()}
+              startIcon={<RefreshRounded />}
+              variant="outlined"
+            >
+              Refrescar
+            </Button>
+          </Stack>
+        }
+      />
 
-      {tariffsQuery.isError && (
-        <Alert severity="error">
-          {getApiErrorMessage(tariffsQuery.error, 'No se pudieron cargar las tarifas')}
+      {!isAdmin && (
+        <Alert icon={<VisibilityRounded />} severity="info">
+          Estás en modo lectura: solo un administrador puede modificar estos parámetros.
         </Alert>
       )}
 
-      {formError && <Alert severity="error">{formError}</Alert>}
-      {saved && <Alert severity="success">Tarifas actualizadas correctamente.</Alert>}
+      {settingsQuery.isError && (
+        <Alert severity="error">
+          {getApiErrorMessage(settingsQuery.error, 'No se pudo cargar la configuración')}
+        </Alert>
+      )}
 
-      <AquaPanel liquid sx={{ p: 3 }}>
-        <Stack spacing={2}>
-          {tiers.map((tier, index) => {
-            const isLast = index === tiers.length - 1;
-
-            return (
-              <Stack
-                key={index}
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={1.5}
-                sx={{ alignItems: { sm: 'center' } }}
-              >
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ fontWeight: 700, minWidth: 64 }}
-                >
-                  Tramo {index + 1}
-                </Typography>
-
-                <TextField
-                  select
-                  label="Tipo"
-                  size="small"
-                  value={tier.type}
-                  onChange={(e) =>
-                    updateTier(index, { type: e.target.value as TariffTierInput['type'] })
-                  }
-                  sx={{ minWidth: 160 }}
-                >
-                  {TariffTierKind.options
-                    .filter((option) => index === 0 || option.value !== 'FIXED')
-                    .map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                </TextField>
-
-                <TextField
-                  label={tier.type === 'FIXED' ? 'Monto (Bs.)' : 'Precio por m³ (Bs.)'}
-                  size="small"
-                  type="number"
-                  value={tier.price}
-                  onChange={(e) => updateTier(index, { price: Number(e.target.value) })}
-                  slotProps={{
-                    input: { startAdornment: <InputAdornment position="start">Bs.</InputAdornment> },
-                  }}
-                  sx={{ minWidth: 160 }}
-                />
-
-                <TextField
-                  label="Hasta (m³)"
-                  size="small"
-                  type="number"
-                  value={isLast ? '' : tier.upToM3 ?? ''}
-                  onChange={(e) =>
-                    updateTier(index, {
-                      upToM3: e.target.value === '' ? null : Number(e.target.value),
-                    })
-                  }
-                  disabled={isLast}
-                  helperText={isLast ? 'Sin tope (último tramo)' : undefined}
-                  sx={{ minWidth: 160 }}
-                />
-
-                <IconButton
-                  color="error"
-                  onClick={() => removeTier(index)}
-                  disabled={tiers.length <= 1}
-                  size="small"
-                >
-                  <DeleteRounded fontSize="small" />
-                </IconButton>
-              </Stack>
-            );
-          })}
-
-          <Button
-            onClick={addTier}
-            startIcon={<AddRounded />}
-            variant="outlined"
-            sx={{ alignSelf: 'flex-start' }}
-          >
-            Agregar tramo
-          </Button>
-        </Stack>
-      </AquaPanel>
-
-      <Button
-        onClick={() => void handleSave()}
-        disabled={replaceMutation.isPending}
-        startIcon={<SaveRounded />}
-        variant="contained"
-        size="large"
-        sx={{ alignSelf: 'flex-start', px: 4 }}
+      {/* Filtro por categoría */}
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, 1fr)',
+            lg: `repeat(${availableCategories.length + 1}, 1fr)`,
+          },
+        }}
       >
-        {replaceMutation.isPending ? 'Guardando...' : 'Guardar cambios'}
-      </Button>
+        {settingsQuery.isLoading ? (
+          [0, 1, 2].map((i) => (
+            <Skeleton key={i} variant="rounded" height={78} sx={{ borderRadius: 3 }} />
+          ))
+        ) : (
+          <>
+            <CategoryFilterCard
+              active={filter === 'ALL'}
+              count={counts.ALL ?? 0}
+              description="Todos los parámetros"
+              icon={<AppsRounded />}
+              label="Todas"
+              onClick={() => setFilter('ALL')}
+              tone="neutral"
+            />
+            {availableCategories.map((category) => {
+              const meta = CATEGORY_META[category];
+              const Icon = meta.icon;
+              return (
+                <CategoryFilterCard
+                  key={category}
+                  active={filter === category}
+                  count={counts[category] ?? 0}
+                  description={meta.description}
+                  icon={<Icon />}
+                  label={SettingCategory.getLabel(category)}
+                  onClick={() => setFilter(category)}
+                  tone={meta.tone}
+                />
+              );
+            })}
+          </>
+        )}
+      </Box>
 
-      <AquaPanel liquid sx={{ p: 3 }}>
-        <BalanceSimulatorCard />
-      </AquaPanel>
+      <TextField
+        fullWidth
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Buscar parámetro por nombre, clave, valor o descripción..."
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRounded />
+              </InputAdornment>
+            ),
+          },
+        }}
+        value={search}
+      />
+
+      {settingsQuery.isLoading ? (
+        <AquaPanel liquid>
+          <Stack spacing={2}>
+            <Skeleton width={180} height={32} />
+            <Box
+              sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}
+            >
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} variant="rounded" height={130} sx={{ borderRadius: 2.5 }} />
+              ))}
+            </Box>
+          </Stack>
+        </AquaPanel>
+      ) : visibleGroups.length === 0 ? (
+        <AquaPanel liquid sx={{ py: 8 }}>
+          <Stack spacing={1.5} sx={{ alignItems: 'center', textAlign: 'center' }}>
+            <SearchOffRounded sx={{ fontSize: 56, color: 'text.disabled' }} />
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+              Sin resultados
+            </Typography>
+            <Typography color="text.secondary">
+              Ningún parámetro coincide con “{search}”.
+            </Typography>
+            <Button onClick={() => setSearch('')}>Limpiar búsqueda</Button>
+          </Stack>
+        </AquaPanel>
+      ) : (
+        visibleGroups.map(({ category, items }) => {
+          const meta = CATEGORY_META[category];
+          const Icon = meta.icon;
+          return (
+            <AquaPanel key={category} liquid sx={{ p: { xs: 2, md: 3 } }}>
+              <Stack spacing={3}>
+                <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                  <Box
+                    sx={(theme) => {
+                      const t = getAquaTone(theme, meta.tone);
+                      return {
+                        width: 44,
+                        height: 44,
+                        borderRadius: 2.5,
+                        display: 'grid',
+                        placeItems: 'center',
+                        color: t.accent,
+                        bgcolor: t.surface,
+                        border: `1px solid ${t.border}`,
+                      };
+                    }}
+                  >
+                    <Icon />
+                  </Box>
+                  <Stack>
+                    <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.2 }}>
+                      {SettingCategory.getLabel(category)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {meta.description}
+                    </Typography>
+                  </Stack>
+                </Stack>
+
+                {groupBySection(items).map(([section, sectionItems]) => (
+                  <Stack key={section} spacing={1.5}>
+                    <Typography
+                      variant="overline"
+                      sx={(theme) => ({
+                        fontWeight: 800,
+                        letterSpacing: '0.12em',
+                        lineHeight: 1,
+                        color: getAquaTone(theme, meta.tone).accent,
+                      })}
+                    >
+                      {section}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gap: 2,
+                        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+                      }}
+                    >
+                      {sectionItems.map((setting) => (
+                        <SettingCard
+                          key={setting.settingKey}
+                          canEdit={isAdmin}
+                          draft={drafts[setting.settingKey]}
+                          isSaving={isSaving}
+                          onChange={(value) => handleChange(setting.settingKey, value)}
+                          onReset={() => handleReset(setting.settingKey)}
+                          serverError={serverErrors[setting.settingKey]}
+                          setting={setting}
+                          tone={meta.tone}
+                        />
+                      ))}
+                    </Box>
+                  </Stack>
+                ))}
+              </Stack>
+            </AquaPanel>
+          );
+        })
+      )}
+
+      {/* Barra de cambios pendientes */}
+      <Slide direction="up" in={dirtyKeys.length > 0} mountOnEnter unmountOnExit>
+        <Box
+          sx={(theme) => ({
+            position: 'fixed',
+            zIndex: theme.zIndex.appBar,
+            left: 0,
+            right: 0,
+            bottom: { xs: 12, md: 24 },
+            display: 'flex',
+            justifyContent: 'center',
+            px: 1.5,
+            pointerEvents: 'none',
+          })}
+        >
+          <Paper
+            elevation={0}
+            sx={(theme) => ({
+              pointerEvents: 'auto',
+              width: { xs: '100%', sm: 'auto' },
+              px: { xs: 2, sm: 3 },
+              py: 1.5,
+              borderRadius: 3,
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: 'center',
+              gap: { xs: 1.5, sm: 3 },
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.35)}`,
+              backdropFilter: 'blur(14px)',
+              bgcolor: alpha(theme.palette.background.paper, 0.9),
+              boxShadow: `0 18px 48px ${alpha(theme.palette.common.black, 0.28)}`,
+            })}
+          >
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+              <Box
+                component="span"
+                sx={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  bgcolor: hasInvalid ? 'error.main' : 'warning.main',
+                }}
+              />
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                {hasInvalid
+                  ? 'Corrige los valores marcados para guardar'
+                  : `${dirtyKeys.length} ${dirtyKeys.length === 1 ? 'cambio sin guardar' : 'cambios sin guardar'}`}
+              </Typography>
+            </Stack>
+            <Stack direction="row" spacing={1}>
+              <Button color="inherit" disabled={isSaving} onClick={handleDiscardAll}>
+                Descartar
+              </Button>
+              <Button
+                disabled={isSaving || hasInvalid}
+                onClick={() => void handleSaveAll()}
+                startIcon={<SaveRounded />}
+                variant="contained"
+              >
+                {isSaving ? 'Guardando...' : 'Guardar cambios'}
+              </Button>
+            </Stack>
+          </Paper>
+        </Box>
+      </Slide>
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        autoHideDuration={3000}
+        onClose={() => setToast(null)}
+        open={Boolean(toast)}
+      >
+        <Alert
+          icon={<CheckCircleRounded />}
+          onClose={() => setToast(null)}
+          severity="success"
+          variant="filled"
+        >
+          {toast}
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 }

@@ -92,6 +92,7 @@ export default function TreasuryAdjustmentDialog({ onClose, open }: TreasuryAdju
             <TextField
               {...field}
               select
+              size="medium"
               fullWidth
               error={Boolean(errors.type)}
               helperText={errors.type?.message}
@@ -110,6 +111,7 @@ export default function TreasuryAdjustmentDialog({ onClose, open }: TreasuryAdju
           {...register('amount')}
           error={Boolean(errors.amount)}
           fullWidth
+          size="medium"
           helperText={errors.amount?.message}
           label="Monto"
           type="number"
@@ -124,6 +126,7 @@ export default function TreasuryAdjustmentDialog({ onClose, open }: TreasuryAdju
           {...register('description')}
           error={Boolean(errors.description)}
           fullWidth
+          size="medium"
           helperText={errors.description?.message}
           label="Descripción / Motivo"
           multiline

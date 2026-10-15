@@ -8,7 +8,7 @@ import type {
   UpdateExpenseDto,
 } from 'modules/expenses/types/expense.types';
 import { httpClient } from 'shared/lib/http-client';
-import { buildListParams } from 'shared/utils/buildListParams';
+import { buildListParams, includeQuery } from 'shared/utils/buildListParams';
 
 const EXPENSES_ENDPOINT = '/expenses';
 
@@ -49,7 +49,10 @@ export const expensesService = {
     );
   },
 
-  findOne: (id: string) => httpClient.get<Expense>(`${EXPENSES_ENDPOINT}/${id}`),
+  findOne: (id: string) =>
+    httpClient.get<Expense>(
+      `${EXPENSES_ENDPOINT}/${id}${includeQuery(['registeredBy', 'reviewedBy'])}`,
+    ),
 
   create: (payload: CreateExpenseDto) => httpClient.post<Expense>(EXPENSES_ENDPOINT, payload),
 

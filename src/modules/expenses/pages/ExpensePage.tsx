@@ -20,9 +20,11 @@ import DeleteRounded from '@mui/icons-material/DeleteRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
 import HourglassTopRounded from '@mui/icons-material/HourglassTopRounded';
 import PaymentsRounded from '@mui/icons-material/PaymentsRounded';
+import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 
 import type { DataTableServerSide as ServerSideConfig } from 'components/MainTableServerSide/DataTableServerSide';
 import DataTableServerSide from 'components/MainTableServerSide/DataTableServerSide';
+import ExpenseDetailDialog from 'modules/expenses/components/ExpenseDetailDialog';
 import ExpenseFormDialog from 'modules/expenses/components/ExpenseFormDialog';
 import RejectExpenseDialog from 'modules/expenses/components/RejectExpenseDialog';
 import {
@@ -70,6 +72,7 @@ export default function ExpensePage() {
   const [formOpen, setFormOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [rejectExpense, setRejectExpense] = useState<Expense | null>(null);
+  const [detailExpenseId, setDetailExpenseId] = useState<string | null>(null);
 
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
@@ -143,6 +146,7 @@ export default function ExpensePage() {
 
   const handleApprove = useCallback(
     async (id: string) => {
+      if (!window.confirm('¿Aprobar este gasto? Su monto se descontará de la caja.')) return;
       setActionError(null);
       try {
         await approveMutation.mutateAsync(id);
@@ -278,6 +282,12 @@ export default function ExpensePage() {
 
           return (
             <Stack direction="row" spacing={0.5}>
+              <Tooltip title="Ver detalle">
+                <IconButton color="secondary" onClick={() => setDetailExpenseId(expense.id)} size="small">
+                  <VisibilityRounded fontSize="small" />
+                </IconButton>
+              </Tooltip>
+
               {isPending && (
                 <>
                   <Tooltip title="Aprobar gasto (Afecta Tesorería)">
@@ -311,18 +321,21 @@ export default function ExpensePage() {
                 </>
               )}
 
-              <Tooltip title="Eliminar gasto">
-                <span>
-                  <IconButton
-                    color="error"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => void handleDelete(expense.id)}
-                    size="small"
-                  >
-                    <DeleteRounded fontSize="small" />
-                  </IconButton>
-                </span>
-              </Tooltip>
+              {/* Un gasto aprobado ya salió de caja: la API no permite eliminarlo. */}
+              {expense.status !== 'APPROVED' && (
+                <Tooltip title="Eliminar gasto">
+                  <span>
+                    <IconButton
+                      color="error"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => void handleDelete(expense.id)}
+                      size="small"
+                    >
+                      <DeleteRounded fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
             </Stack>
           );
         },
@@ -475,6 +488,8 @@ export default function ExpensePage() {
         onClose={() => setRejectExpense(null)}
         open={Boolean(rejectExpense)}
       />
+
+      <ExpenseDetailDialog expenseId={detailExpenseId} onClose={() => setDetailExpenseId(null)} />
     </Stack>
   );
 }

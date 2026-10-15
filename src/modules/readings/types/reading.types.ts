@@ -83,5 +83,7 @@ export type ReadingsList = PaginatedData<ReadingWithMeter>;
 
 export type SimulatedBalance = {
   cubicMeters: number;
+  /** m³ que realmente se cobran (el consumo redondeado para facturación). */
+  billableCubicMeters?: number;
   balance: number;
 };

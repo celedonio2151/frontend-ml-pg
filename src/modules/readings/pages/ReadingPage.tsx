@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 import type { ColumnDef } from '@tanstack/react-table';
 
 import BalanceSimulatorDialog from 'components/BalanceSimulator/BalanceSimulatorDialog';
+import DateRangeFilterBar from 'components/DateRangeFilterBar';
 import type { DataTableServerSide as ServerSideConfig } from 'components/MainTableServerSide/DataTableServerSide';
 import DataTableServerSide from 'components/MainTableServerSide/DataTableServerSide';
 import DeleteReadingDialog from 'modules/readings/components/DeleteReadingDialog';
@@ -50,9 +51,15 @@ export default function ReadingPage() {
   // 2. Debounce para la busqueda
   const debouncedSearch = useDebounce(search, 500);
 
-  const isRolloverFilter = columnFilters.find((f) => f.id === 'isRollover')?.value as
-    | boolean
-    | undefined;
+  const [dateRange, setDateRange] = useState({ dateFrom: '', dateTo: '' });
+
+  const getFilter = (id: string) => columnFilters.find((f) => f.id === id)?.value;
+  const isRolloverFilter = getFilter('isRollover') as boolean | undefined;
+  // Un solo input "Nombre / CI": si son solo dígitos se filtra por CI, si no por nombre.
+  const ownerFilter = ((getFilter('owner') as string | undefined) ?? '').trim();
+  const isCiFilter = /^\d+$/.test(ownerFilter);
+  const meterFilter = ((getFilter('meter') as string | undefined) ?? '').replace('#', '').trim();
+  const meterNumberFilter = /^\d+$/.test(meterFilter) ? Number(meterFilter) : undefined;
 
   // 3. Query con todos los parametros del servidor
   const readingsParams = useMemo(
@@ -62,8 +69,23 @@ export default function ReadingPage() {
       sortBy,
       q: debouncedSearch,
       isRollover: isRolloverFilter,
+      ownerCi: isCiFilter ? ownerFilter : undefined,
+      ownerName: !isCiFilter && ownerFilter ? ownerFilter : undefined,
+      meterNumber: meterNumberFilter,
+      dateFrom: dateRange.dateFrom || undefined,
+      dateTo: dateRange.dateTo || undefined,
     }),
-    [pageSize, page, sortBy, debouncedSearch, isRolloverFilter],
+    [
+      pageSize,
+      page,
+      sortBy,
+      debouncedSearch,
+      isRolloverFilter,
+      isCiFilter,
+      ownerFilter,
+      meterNumberFilter,
+      dateRange,
+    ],
   );
 
   const readingsQuery = useReadings(readingsParams);
@@ -132,7 +154,7 @@ export default function ReadingPage() {
         accessorFn: (row) => row.meter?.meterNumber ?? row.meterId,
         id: 'meter',
         header: 'N° Medidor',
-        enableColumnFilter: false,
+        meta: { filterVariant: 'text' },
         cell: ({ row }) => (
           <Typography color="primary.light" variant="body2" sx={{ fontWeight: 850 }}>
             {`#${row.original.meter?.meterNumber ?? row.original.meterId}`}
@@ -308,6 +330,16 @@ export default function ReadingPage() {
           {getApiErrorMessage(readingsQuery.error, 'No se pudieron cargar lecturas')}
         </Alert>
       ) : null}
+
+      <DateRangeFilterBar
+        dateFrom={dateRange.dateFrom}
+        dateTo={dateRange.dateTo}
+        label="Fecha de lectura:"
+        onChange={(range) => {
+          setDateRange(range);
+          resetPage();
+        }}
+      />
 
       <DataTableServerSide<ReadingWithMeter>
         serverSide={serverSideConfig}

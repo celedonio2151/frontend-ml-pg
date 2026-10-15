@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { tariffService } from 'modules/settings/services/tariff.service';
-import type { ReplaceTariffsDto } from 'modules/settings/types/tariff.types';
+import { tariffService } from 'modules/tariffs/services/tariff.service';
+import type { ReplaceTariffsDto } from 'modules/tariffs/types/tariff.types';
 
 export const tariffsQueryKeys = {
   all: ['tariffs'] as const,

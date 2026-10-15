@@ -1,28 +1,28 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 
 // MUI ICONS
 import AccountBalanceWalletRounded from '@mui/icons-material/AccountBalanceWalletRounded';
 import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
-import ImageRounded from '@mui/icons-material/ImageRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import WaterDropRounded from '@mui/icons-material/WaterDropRounded';
 
 import FormControlLabel from '@mui/material/FormControlLabel';
 import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import FormDialog from 'components/FormDialog';
-import { useMeters } from 'modules/meters/hooks/useMeters';
-import type { MetersListParams } from 'modules/meters/types/meter.types';
+import ImageUploadField from 'components/ImageUploadField';
+import MeterAutocomplete from 'modules/meters/components/MeterAutocomplete';
+import type { MeterWithUser } from 'modules/meters/types/meter.types';
+import ReadingBalancePreview from 'modules/readings/components/ReadingBalancePreview';
 import {
   useCreateReadingMutation,
   useUpdateReadingMutation,
@@ -84,7 +84,6 @@ function toCreatePayload(values: ReadingFormValues): CreateReadingDto {
     description: cleanOptional(values.description),
     isRollover: values.isRollover,
     meterId: values.meterId ?? '',
-    meterImage: cleanOptional(values.meterImage),
   };
 }
 
@@ -110,16 +109,7 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
   const updateReadingMutation = useUpdateReadingMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const metersParams = useMemo<MetersListParams>(
-    () => ({
-      limit: 100,
-      page: 1,
-      sortBy: [{ order: 'asc', whom: 'meterNumber' }],
-    }),
-    [],
-  );
-  const metersQuery = useMeters(metersParams);
-  const meters = metersQuery.data?.items ?? [];
+  const [selectedMeter, setSelectedMeter] = useState<MeterWithUser | null>(null);
 
   const {
     control,
@@ -134,9 +124,14 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
     resolver: zodResolver(readingFormSchema),
   });
 
+  const watchedCurrentValue = useWatch({ control, name: 'currentValue' });
+  const watchedIsRollover = useWatch({ control, name: 'isRollover' });
+
   useEffect(() => {
     if (open) {
       reset(toFormValues(reading));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedMeter(null);
     }
   }, [open, reading, reset]);
 
@@ -174,7 +169,7 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
 
         if (!payload) {
           setError('description', {
-            message: 'La descripcion es obligatoria cuando se modifica el balance',
+            message: 'La descripción es obligatoria cuando se modifica el saldo',
             type: 'validate',
           });
           return;
@@ -249,46 +244,28 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
           </Stack>
         ) : (
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <TextField
-              disabled={metersQuery.isLoading}
-              error={Boolean(errors.meterId)}
-              fullWidth
-              helperText={
-                errors.meterId?.message ??
-                (metersQuery.isError ? 'No se pudieron cargar medidores' : undefined)
-              }
-              label="Medidor"
-              size="medium"
-              select
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SpeedRounded fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              {...register('meterId')}
-            >
-              {meters.length > 0 ? (
-                meters.map((meter) => (
-                  <MenuItem key={meter.id} value={meter.id}>
-                    #{meter.meterNumber} - {meter.user.name} {meter.user.surname}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled value="">
-                  Sin medidores disponibles
-                </MenuItem>
+            <Controller
+              control={control}
+              name="meterId"
+              render={({ field }) => (
+                <MeterAutocomplete
+                  error={Boolean(errors.meterId)}
+                  helperText={errors.meterId?.message}
+                  onBlur={field.onBlur}
+                  onChange={(meterId, meter) => {
+                    field.onChange(meterId);
+                    setSelectedMeter(meter);
+                  }}
+                  value={field.value ?? ''}
+                />
               )}
-            </TextField>
+            />
 
             <Controller
               control={control}
               name="date"
               render={({ field }) => (
-                <DateTimePicker
+                <DatePicker
                   label="Fecha de lectura"
                   onChange={(value) => field.onChange(value?.isValid() ? value.toISOString() : '')}
                   value={field.value ? dayjs(field.value) : null}
@@ -340,7 +317,7 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
               error={Boolean(errors.balance)}
               fullWidth
               helperText={errors.balance?.message}
-              label="Balance"
+              label="Saldo"
               type="number"
               size="medium"
               slotProps={{
@@ -355,27 +332,16 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
               }}
               {...register('balance')}
             />
-          ) : (
-            <TextField
-              error={Boolean(errors.meterImage)}
-              fullWidth
-              helperText={errors.meterImage?.message}
-              label="Imagen del medidor"
-              placeholder="URL o base64"
-              size="medium"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <ImageRounded fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              {...register('meterImage')}
-            />
-          )}
+          ) : null}
         </Stack>
+
+        {!isEditMode ? (
+          <ReadingBalancePreview
+            currentValue={watchedCurrentValue ?? ''}
+            isRollover={Boolean(watchedIsRollover)}
+            previousValue={selectedMeter?.currentValue}
+          />
+        ) : null}
 
         {!isEditMode ? (
           <Controller
@@ -396,14 +362,22 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
           />
         ) : null}
 
+        {!isEditMode ? (
+          <ImageUploadField
+            label="Foto del medidor (opcional)"
+            notice="La foto todavía no se guarda: falta integrar Cloudinary en el backend."
+            onChange={() => undefined}
+          />
+        ) : null}
+
         <TextField
           error={Boolean(errors.description)}
           fullWidth
           helperText={
             errors.description?.message ??
-            (isEditMode ? 'Obligatoria si modificas el balance.' : undefined)
+            (isEditMode ? 'Obligatoria si modificas el saldo.' : undefined)
           }
-          label={isEditMode ? 'Descripcion / justificacion' : 'Descripcion'}
+          label={isEditMode ? 'Descripción / justificación' : 'Descripción'}
           multiline
           minRows={3}
           {...register('description')}
