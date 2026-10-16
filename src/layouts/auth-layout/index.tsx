@@ -42,7 +42,9 @@ function AuthLayout({ children }: PropsWithChildren) {
           overflow: 'hidden',
           borderLeft: (theme) =>
             `1px solid ${
-              theme.palette.mode === 'dark' ? 'rgba(125, 211, 252, 0.12)' : 'rgba(2, 132, 199, 0.14)'
+              theme.palette.mode === 'dark'
+                ? 'rgba(125, 211, 252, 0.12)'
+                : 'rgba(2, 132, 199, 0.14)'
             }`,
           background: (theme) =>
             theme.palette.mode === 'dark'
@@ -106,8 +108,9 @@ function AuthLayout({ children }: PropsWithChildren) {
             <Typography variant="h2" sx={{ fontWeight: 950, lineHeight: 1 }}>
               AquaAdmin
             </Typography>
-            <Typography color="text.secondary" variant="h6" sx={{ maxWidth: 480 }}>
-              Control operativo para usuarios, medidores, lecturas y facturacion del sistema de agua.
+            <Typography color="text.secondary" variant="h6" sx={{ fontWeight: 500, maxWidth: 480 }}>
+              Control operativo para usuarios, medidores, lecturas y facturacion del sistema de
+              agua.
             </Typography>
           </Stack>
         </Stack>

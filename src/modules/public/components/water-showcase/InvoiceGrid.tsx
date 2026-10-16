@@ -22,7 +22,9 @@ function InvoiceGrid() {
                 <Typography variant="caption" color="text.secondary">
                   Factura
                 </Typography>
-                <Typography sx={{ fontFamily: 'JetBrains Mono, Consolas, monospace', fontWeight: 800 }}>
+                <Typography
+                  sx={{ fontFamily: 'JetBrains Mono, Consolas, monospace', fontWeight: 800 }}
+                >
                   {invoice.id}
                 </Typography>
               </Box>
@@ -31,7 +33,7 @@ function InvoiceGrid() {
             <Divider />
             <Stack spacing={1}>
               <Typography variant="body2">{invoice.client}</Typography>
-              <Typography variant="h5" color="primary.light" sx={{ fontWeight: 900 }}>
+              <Typography variant="h5" color="primary.light">
                 {invoice.amount}
               </Typography>
               <Typography variant="caption" color="text.secondary">

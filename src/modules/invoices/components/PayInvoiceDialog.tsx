@@ -107,7 +107,7 @@ export default function PayInvoiceDialog({ invoice, onClose, open }: PayInvoiceD
             <Typography variant="body2" color="text.secondary">
               Monto a pagar:
             </Typography>
-            <Typography variant="h4" color="primary.main" sx={{ fontWeight: 900 }}>
+            <Typography variant="h4" color="primary.main">
               Bs.{' '}
               {invoice.amountDue.toLocaleString('es-BO', {
                 minimumFractionDigits: 2,
@@ -138,30 +138,7 @@ export default function PayInvoiceDialog({ invoice, onClose, open }: PayInvoiceD
                   }
                 }}
                 color="primary"
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: 1.5,
-                  '& .MuiToggleButtonGroup-grouped': {
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: '12px !important',
-                    p: 1.5,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 0.5,
-                    textTransform: 'none',
-                    transition: 'all 0.2s',
-                    '&.Mui-selected': {
-                      borderColor: 'primary.main',
-                      bgcolor: 'rgba(6, 182, 212, 0.08)',
-                      color: 'primary.main',
-                      '&:hover': {
-                        bgcolor: 'rgba(6, 182, 212, 0.12)',
-                      },
-                    },
-                  },
-                }}
+                sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
               >
                 <ToggleButton value="CASH">
                   <LocalAtmRounded />
@@ -207,7 +184,6 @@ export default function PayInvoiceDialog({ invoice, onClose, open }: PayInvoiceD
             label="Notas adicionales (opcional)"
             multiline
             rows={3}
-            size="medium"
             slotProps={{
               input: {
                 startAdornment: (

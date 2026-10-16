@@ -126,7 +126,6 @@ export default function MeterFormDialog({ meter, onClose, open }: MeterFormDialo
             fullWidth
             helperText={errors.meterNumber?.message}
             label="Número de medidor"
-            size="medium"
             type="number"
             slotProps={{
               input: {
@@ -145,7 +144,6 @@ export default function MeterFormDialog({ meter, onClose, open }: MeterFormDialo
             fullWidth
             helperText={errors.maximumCapacity?.message}
             label="Capacidad máxima"
-            size="medium"
             type="number"
             slotProps={{
               input: {

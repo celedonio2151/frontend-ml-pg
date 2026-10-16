@@ -150,7 +150,6 @@ export default function DirectivaFormDialog({
           fullWidth
           helperText={errors.positionRole?.message}
           label="Cargo"
-          size="medium"
           placeholder="Ej: Presidente, Secretario, Tesorero..."
         />
 
@@ -167,7 +166,6 @@ export default function DirectivaFormDialog({
                 value={field.value ? dayjs(field.value) : null}
                 slotProps={{
                   textField: {
-                    fullWidth: true,
                     error: Boolean(errors.startDate),
                     helperText: errors.startDate?.message,
                   },
@@ -187,7 +185,6 @@ export default function DirectivaFormDialog({
                 value={field.value ? dayjs(field.value) : null}
                 slotProps={{
                   textField: {
-                    fullWidth: true,
                     error: Boolean(errors.endDate),
                     helperText: errors.endDate?.message,
                   },
@@ -204,7 +201,6 @@ export default function DirectivaFormDialog({
             <TextField
               error={Boolean(errors.order)}
               fullWidth
-              size="medium"
               helperText={errors.order?.message || 'Orden jerárquico; 1 es el cargo más alto'}
               label="Orden jerárquico"
               onChange={(e) => field.onChange(Number(e.target.value))}
@@ -221,7 +217,6 @@ export default function DirectivaFormDialog({
           helperText={errors.description?.message}
           label="Descripción (opcional)"
           multiline
-          size="medium"
           minRows={2}
         />
 

@@ -181,11 +181,7 @@ export default function InvoiceDetailPage() {
                     <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                       Monto a Pagar
                     </Typography>
-                    <Typography
-                      variant="h5"
-                      color="primary.main"
-                      sx={{ fontFamily: 'monospace', fontWeight: 900 }}
-                    >
+                    <Typography variant="h5" color="primary.main" sx={{ fontFamily: 'monospace' }}>
                       {formatCurrency(amountDueNum)}
                     </Typography>
                   </Stack>
@@ -320,11 +316,7 @@ export default function InvoiceDetailPage() {
                   Procesar Pago
                 </Typography>
 
-                {submitError && (
-                  <Alert severity="error" sx={{ borderRadius: 2 }}>
-                    {submitError}
-                  </Alert>
-                )}
+                {submitError && <Alert severity="error">{submitError}</Alert>}
 
                 <Controller
                   control={control}
@@ -344,30 +336,7 @@ export default function InvoiceDetailPage() {
                           }
                         }}
                         color="primary"
-                        sx={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(2, 1fr)',
-                          gap: 1.5,
-                          '& .MuiToggleButtonGroup-grouped': {
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            borderRadius: '12px !important',
-                            p: 1.5,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 0.5,
-                            textTransform: 'none',
-                            transition: 'all 0.2s',
-                            '&.Mui-selected': {
-                              borderColor: 'primary.main',
-                              bgcolor: 'rgba(6, 182, 212, 0.08)',
-                              color: 'primary.main',
-                              '&:hover': {
-                                bgcolor: 'rgba(6, 182, 212, 0.12)',
-                              },
-                            },
-                          },
-                        }}
+                        sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
                       >
                         <ToggleButton value="CASH">
                           <LocalAtmRounded />
@@ -444,7 +413,7 @@ export default function InvoiceDetailPage() {
                 <Box sx={{ color: 'success.main', mb: -1 }}>
                   <CheckCircleRounded sx={{ fontSize: 64 }} />
                 </Box>
-                <Typography variant="h6" sx={{ fontWeight: 800 }} color="success.main">
+                <Typography variant="h6" color="success.main">
                   Factura Pagada
                 </Typography>
                 <Stack spacing={1} sx={{ width: '100%' }}>

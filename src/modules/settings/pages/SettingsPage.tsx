@@ -343,6 +343,7 @@ export default function SettingsPage() {
 
       <TextField
         fullWidth
+        size="small"
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Buscar parámetro por nombre, clave, valor o descripción..."
         slotProps={{
@@ -374,9 +375,7 @@ export default function SettingsPage() {
         <AquaPanel liquid sx={{ py: 8 }}>
           <Stack spacing={1.5} sx={{ alignItems: 'center', textAlign: 'center' }}>
             <SearchOffRounded sx={{ fontSize: 56, color: 'text.disabled' }} />
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>
-              Sin resultados
-            </Typography>
+            <Typography variant="h6">Sin resultados</Typography>
             <Typography color="text.secondary">
               Ningún parámetro coincide con “{search}”.
             </Typography>

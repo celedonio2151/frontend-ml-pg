@@ -110,7 +110,6 @@ export default function UserAutocomplete({
       renderInput={(params) => (
         <TextField
           {...params}
-          size="medium"
           error={error}
           helperText={helperText}
           label={label}

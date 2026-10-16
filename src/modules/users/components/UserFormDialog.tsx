@@ -171,7 +171,6 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
             fullWidth
             helperText={errors.name?.message}
             label="Nombre"
-            size="medium"
             slotProps={{
               input: {
                 readOnly: isEditMode,
@@ -189,7 +188,6 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
             fullWidth
             helperText={errors.surname?.message}
             label="Apellido"
-            size="medium"
             slotProps={{
               input: {
                 readOnly: isEditMode,
@@ -210,7 +208,6 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
             fullWidth
             helperText={errors.ci?.message}
             label="Carnet de identidad"
-            size="medium"
             slotProps={{
               input: {
                 readOnly: isEditMode,
@@ -228,7 +225,6 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
             fullWidth
             helperText={errors.email?.message}
             label="Correo"
-            size="medium"
             slotProps={{
               input: {
                 startAdornment: (
@@ -280,7 +276,6 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
             fullWidth
             helperText={errors.phoneNumber?.message}
             label="Telefono"
-            size="medium"
             slotProps={{
               input: {
                 startAdornment: (
@@ -305,7 +300,6 @@ export default function UserFormDialog({ onClose, open, user }: UserFormDialogPr
                 slotProps={{
                   textField: {
                     error: Boolean(errors.birthDate),
-                    fullWidth: true,
                     helperText: errors.birthDate?.message,
                     slotProps: {
                       input: {

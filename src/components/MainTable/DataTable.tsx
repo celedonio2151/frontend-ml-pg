@@ -325,11 +325,7 @@ export function DataTable<TData extends RowData>({
               </Tooltip>
             ) : null}
             <Box sx={{ minWidth: 0 }}>
-              {shouldShowTitle ? (
-                <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                  {title}
-                </Typography>
-              ) : null}
+              {shouldShowTitle ? <Typography variant="h5">{title}</Typography> : null}
               <Typography variant={shouldShowTitle ? 'body2' : 'body1'} color="text.secondary">
                 {subtitle ?? toolbarSummary}
               </Typography>

@@ -43,7 +43,6 @@ const dotStyles: Record<string, SxProps<Theme>> = {
 function StatusPill({ label, pulse = false, tone = 'aqua', sx, ...props }: StatusPillProps) {
   return (
     <Chip
-      size="small"
       variant="outlined"
       label={label}
       icon={<Box component="span" sx={pulse ? dotStyles.pulse : dotStyles.root} />}

@@ -55,9 +55,10 @@ export default function TreasuryPage() {
   const debouncedSearch = useDebounce(search, 500);
 
   // Column filter extraction
-  const typeFilter = columnFilters.find((f) => f.id === 'type')?.value as TreasuryMovementType | undefined;
-  const referenceTypeFilter = columnFilters.find((f) => f.id === 'referenceType')
-    ?.value as TreasuryReferenceType | undefined;
+  const typeFilter = columnFilters.find((f) => f.id === 'type')?.value as
+    TreasuryMovementType | undefined;
+  const referenceTypeFilter = columnFilters.find((f) => f.id === 'referenceType')?.value as
+    TreasuryReferenceType | undefined;
 
   // 4. API parameters
   const treasuryParams = useMemo<TreasuryListParams>(
@@ -182,10 +183,7 @@ export default function TreasuryPage() {
           };
 
           return (
-            <StatusPill
-              label={labels[refType] || refType}
-              tone={tones[refType] || 'neutral'}
-            />
+            <StatusPill label={labels[refType] || refType} tone={tones[refType] || 'neutral'} />
           );
         },
       },
@@ -335,7 +333,6 @@ export default function TreasuryPage() {
           slotProps={{
             textField: {
               size: 'small',
-              fullWidth: true,
             },
           }}
         />
@@ -346,7 +343,6 @@ export default function TreasuryPage() {
           slotProps={{
             textField: {
               size: 'small',
-              fullWidth: true,
             },
           }}
         />

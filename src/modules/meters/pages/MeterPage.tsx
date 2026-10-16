@@ -140,8 +140,8 @@ export default function MeterPage() {
         header: 'Lectura Actual',
         enableColumnFilter: false,
         meta: { align: 'right' },
-        cell: () => {
-          const currentReading = 0; // TODO: row.original.currentReading
+        cell: ({ row }) => {
+          const currentReading = row.original.currentValue ?? 0;
           return (
             <Typography
               variant="body2"
@@ -163,39 +163,16 @@ export default function MeterPage() {
         enableColumnFilter: false,
         cell: ({ row }) => {
           const maxCapacity = row.original.maximumCapacity;
-          const currentReading = 0; // TODO: row.original.currentReading
+          const currentReading = row.original.currentValue ?? 0;
           const progress = Math.min((currentReading / maxCapacity) * 100, 100);
 
           return (
             <Stack spacing={0.5} sx={{ width: 140 }}>
-              {/* <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography variant="caption" color="text.secondary">
-                  {progress.toFixed(1)}%
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ fontFamily: 'JetBrains Mono', fontWeight: 700 }}
-                >
-                  {maxCapacity.toLocaleString('es-BO')}
-                </Typography>
-              </Stack> */}
+              {/* TODO; Consider adding a tooltip or label to indicate the exact progress percentage and create new component customized for this purpose */}
               <LinearProgress
                 variant="determinate"
+                color={progress > 90 ? 'error' : progress > 75 ? 'warning' : 'primary'}
                 value={progress}
-                sx={{
-                  height: 6,
-                  borderRadius: 3,
-                  backgroundColor: 'rgba(6, 182, 212, 0.12)',
-                  '& .MuiLinearProgress-bar': {
-                    borderRadius: 3,
-                    backgroundColor:
-                      progress > 90
-                        ? 'error.main'
-                        : progress > 75
-                          ? 'warning.main'
-                          : 'primary.main',
-                  },
-                }}
               />
             </Stack>
           );

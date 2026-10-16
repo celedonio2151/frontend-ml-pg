@@ -28,7 +28,11 @@ function MeterPreviewCard({ meter }: MeterPreviewCardProps) {
   return (
     <AquaPanel hover liquid sx={{ p: 2.5 }}>
       <Stack spacing={2}>
-        <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}
+        >
           <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
             <Box
               sx={{
@@ -45,7 +49,7 @@ function MeterPreviewCard({ meter }: MeterPreviewCardProps) {
               <SpeedRounded />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontFamily: 'JetBrains Mono, Consolas, monospace', fontWeight: 800 }}>
+              <Typography variant="h6" sx={{ fontFamily: 'JetBrains Mono, Consolas, monospace' }}>
                 {meter.id}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -66,13 +70,17 @@ function MeterPreviewCard({ meter }: MeterPreviewCardProps) {
             <Typography variant="body2" color="text.secondary">
               Lectura actual
             </Typography>
-            <Typography variant="body2" color="primary.light" sx={{ fontFamily: 'JetBrains Mono, Consolas, monospace' }}>
+            <Typography
+              variant="body2"
+              color="primary.light"
+              sx={{ fontFamily: 'JetBrains Mono, Consolas, monospace' }}
+            >
               {meter.reading}
             </Typography>
           </Stack>
         </Stack>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-          <LinearProgress variant="determinate" value={meter.progress} sx={{ flex: 1, height: 7, borderRadius: 99 }} />
+          <LinearProgress variant="determinate" value={meter.progress} sx={{ flex: 1 }} />
           <Typography variant="caption" color="text.secondary">
             {meter.progress}%
           </Typography>

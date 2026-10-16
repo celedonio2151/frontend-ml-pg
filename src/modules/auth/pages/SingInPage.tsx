@@ -133,7 +133,6 @@ export default function SingInPage() {
               },
             }}
             type="email"
-            size="medium"
             {...register('email')}
           />
           <TextField
@@ -163,7 +162,6 @@ export default function SingInPage() {
               },
             }}
             type={showPassword ? 'text' : 'password'}
-            size="medium"
             {...register('password')}
           />
         </Stack>

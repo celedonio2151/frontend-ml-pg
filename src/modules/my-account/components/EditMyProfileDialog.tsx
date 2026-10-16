@@ -97,7 +97,6 @@ export default function EditMyProfileDialog({ onClose, open, profile }: EditMyPr
           {...register('email')}
           error={Boolean(errors.email)}
           fullWidth
-          size="medium"
           helperText={errors.email?.message}
           label="Correo"
           type="email"
@@ -106,7 +105,6 @@ export default function EditMyProfileDialog({ onClose, open, profile }: EditMyPr
           {...register('phoneNumber')}
           error={Boolean(errors.phoneNumber)}
           fullWidth
-          size="medium"
           helperText={errors.phoneNumber?.message}
           label="Teléfono"
         />
@@ -122,7 +120,6 @@ export default function EditMyProfileDialog({ onClose, open, profile }: EditMyPr
               value={field.value ? dayjs(field.value) : null}
               slotProps={{
                 textField: {
-                  fullWidth: true,
                   error: Boolean(errors.birthDate),
                   helperText: errors.birthDate?.message,
                 },

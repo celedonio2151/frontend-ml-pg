@@ -45,18 +45,12 @@ function ReadingFormDemo() {
     <>
       <AquaPanel liquid>
         <Stack spacing={2}>
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>
-            Registro de lectura
-          </Typography>
+          <Typography variant="h6">Registro de lectura</Typography>
           <Box component="form">
             <Stack spacing={2}>
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                 <TextField fullWidth label="Medidor" defaultValue="#1001" />
-                <DatePicker
-                  label="Fecha de lectura"
-                  defaultValue={dayjs('2026-06-24')}
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
+                <DatePicker label="Fecha de lectura" defaultValue={dayjs('2026-06-24')} />
               </Stack>
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                 <TextField fullWidth label="Lectura anterior" defaultValue="44,980" />
@@ -67,8 +61,15 @@ function ReadingFormDemo() {
                 <MenuItem value="pending">Pendiente</MenuItem>
                 <MenuItem value="overdue">Vencido</MenuItem>
               </TextField>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ alignItems: { md: 'center' } }}>
-                <FormControlLabel control={<Switch defaultChecked />} label="Notificar al usuario" />
+              <Stack
+                direction={{ xs: 'column', md: 'row' }}
+                spacing={2}
+                sx={{ alignItems: { md: 'center' } }}
+              >
+                <FormControlLabel
+                  control={<Switch defaultChecked />}
+                  label="Notificar al usuario"
+                />
                 <FormControlLabel control={<Checkbox defaultChecked />} label="Generar QR" />
               </Stack>
               <FormControl>
@@ -88,7 +89,11 @@ function ReadingFormDemo() {
                 <Button variant="contained" startIcon={<SaveRounded />} onClick={handleSaveDemo}>
                   Guardar demo
                 </Button>
-                <Button variant="outlined" startIcon={<CloseRounded />} onClick={() => setDialogOpen(true)}>
+                <Button
+                  variant="outlined"
+                  startIcon={<CloseRounded />}
+                  onClick={() => setDialogOpen(true)}
+                >
                   Cancelar
                 </Button>
               </Stack>
@@ -101,7 +106,8 @@ function ReadingFormDemo() {
         <DialogTitle>Cancelar cambios</DialogTitle>
         <DialogContent>
           <Typography color="text.secondary">
-            Este dialogo demuestra el componente modal personalizado para acciones sensibles del panel.
+            Este dialogo demuestra el componente modal personalizado para acciones sensibles del
+            panel.
           </Typography>
         </DialogContent>
         <DialogActions>

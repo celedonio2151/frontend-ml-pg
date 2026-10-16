@@ -51,7 +51,7 @@ export default function MorososPage() {
           justifyContent: 'space-between',
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 900, color: 'primary.main' }}>
+        <Typography variant="h4" sx={{ color: 'primary.main' }}>
           Gestión de Morosos
         </Typography>
         <Button
@@ -162,7 +162,6 @@ export default function MorososPage() {
                         <Chip
                           label={`${moroso.totalInvoices} facturas vencidas`}
                           color="error"
-                          size="small"
                           sx={{ fontWeight: 600 }}
                         />
                       </Stack>

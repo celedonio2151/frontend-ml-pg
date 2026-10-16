@@ -100,7 +100,6 @@ export default function MeterAutocomplete({
           {...params}
           error={error}
           helperText={helperText}
-          size="medium"
           label={label}
           placeholder="Buscar por n° de medidor, nombre o CI"
           slotProps={{

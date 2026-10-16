@@ -1,12 +1,16 @@
 import type { Invoice } from 'modules/invoices/types/invoice.types';
+import { defineOptions } from 'shared/utils/define-options';
 
-export type QrPaymentStatusType =
-  | 'GENERATING'
-  | 'PENDING'
-  | 'PAID'
-  | 'EXPIRED'
-  | 'CANCELLED'
-  | 'ERROR';
+export const QrPaymentStatus = defineOptions([
+  { value: 'GENERATING', label: 'Generando' },
+  { value: 'PENDING', label: 'Pendiente' },
+  { value: 'PAID', label: 'Pagado' },
+  { value: 'CANCELLED', label: 'Cancelado' },
+  { value: 'EXPIRED', label: 'Expirado' },
+  { value: 'ERROR', label: 'Error' },
+] as const);
+
+export type QrPaymentStatusType = (typeof QrPaymentStatus.values)[number];
 
 export const QR_TERMINAL_STATUSES: QrPaymentStatusType[] = [
   'PAID',
@@ -45,5 +49,7 @@ export type ConfirmQrPaymentResult = {
   settled: boolean;
   /** true si la factura ya estaba pagada por otra vía (requiere conciliación). */
   duplicate: boolean;
+  /** true si el QR se pagó pero la factura cambió de monto y NO se liquidó (revisión manual). */
+  amountMismatch: boolean;
   invoice: Invoice;
 };

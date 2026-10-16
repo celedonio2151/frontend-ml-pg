@@ -209,7 +209,6 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
               disabled
               fullWidth
               label="Propietario"
-              size="medium"
               value={`${reading?.ownerName ?? ''} ${reading?.ownerSurname ?? ''}`.trim()}
               slotProps={{
                 input: {
@@ -225,7 +224,6 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
               disabled
               fullWidth
               label="Medidor"
-              size="medium"
               value={
                 reading?.meter?.meterNumber
                   ? `#${reading.meter.meterNumber}`
@@ -272,7 +270,6 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
                   slotProps={{
                     textField: {
                       error: Boolean(errors.date),
-                      fullWidth: true,
                       helperText: errors.date?.message,
                       slotProps: {
                         input: {
@@ -298,7 +295,6 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
             helperText={errors.currentValue?.message}
             label="Lectura actual"
             type="number"
-            size="medium"
             slotProps={{
               htmlInput: { min: 0, step: '0.01' },
               input: {
@@ -319,7 +315,6 @@ export default function ReadingFormDialog({ onClose, open, reading }: ReadingFor
               helperText={errors.balance?.message}
               label="Saldo"
               type="number"
-              size="medium"
               slotProps={{
                 htmlInput: { min: 0, step: '0.01' },
                 input: {

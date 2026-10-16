@@ -32,6 +32,7 @@ export const typography: TypographyVariantsOptions = {
     },
   },
   h4: {
+    fontWeight: 900,
     lineHeight: 1.2,
     fontSize: '1.5rem',
     '@media (max-width:600px)': {
@@ -39,6 +40,7 @@ export const typography: TypographyVariantsOptions = {
     },
   },
   h5: {
+    fontWeight: 900,
     lineHeight: 1.2,
     fontSize: '1.25rem',
     '@media (max-width:600px)': {
@@ -46,6 +48,7 @@ export const typography: TypographyVariantsOptions = {
     },
   },
   h6: {
+    fontWeight: 800,
     lineHeight: 1.2,
     fontSize: '1.1rem',
     '@media (max-width:600px)': {

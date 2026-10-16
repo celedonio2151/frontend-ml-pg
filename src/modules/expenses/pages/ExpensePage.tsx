@@ -90,11 +90,9 @@ export default function ExpensePage() {
 
   // Extracción de filtros por columna
   const categoryFilter = columnFilters.find((f) => f.id === 'category')?.value as
-    | ExpenseCategoryType
-    | undefined;
+    ExpenseCategoryType | undefined;
   const statusFilter = columnFilters.find((f) => f.id === 'status')?.value as
-    | ExpenseStatusType
-    | undefined;
+    ExpenseStatusType | undefined;
 
   // 4. Parámetros de API
   const expensesParams = useMemo<ExpensesListParams>(
@@ -283,7 +281,11 @@ export default function ExpensePage() {
           return (
             <Stack direction="row" spacing={0.5}>
               <Tooltip title="Ver detalle">
-                <IconButton color="secondary" onClick={() => setDetailExpenseId(expense.id)} size="small">
+                <IconButton
+                  color="secondary"
+                  onClick={() => setDetailExpenseId(expense.id)}
+                  size="small"
+                >
                   <VisibilityRounded fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -424,7 +426,6 @@ export default function ExpensePage() {
           onChange={(value) => setDateFrom(value?.isValid() ? value.format('YYYY-MM-DD') : '')}
           slotProps={{
             textField: {
-              fullWidth: true,
               size: 'small',
             },
           }}
@@ -435,7 +436,6 @@ export default function ExpensePage() {
           onChange={(value) => setDateTo(value?.isValid() ? value.format('YYYY-MM-DD') : '')}
           slotProps={{
             textField: {
-              fullWidth: true,
               size: 'small',
             },
           }}

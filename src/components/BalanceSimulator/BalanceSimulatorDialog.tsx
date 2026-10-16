@@ -25,9 +25,7 @@ export default function BalanceSimulatorDialog({ onClose, open }: BalanceSimulat
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
           <CalculateRounded color="primary" />
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>
-            Simular saldo
-          </Typography>
+          <Typography variant="h6">Simular saldo</Typography>
         </Stack>
         <IconButton onClick={onClose} size="small">
           <CloseRounded />

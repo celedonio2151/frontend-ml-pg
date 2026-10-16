@@ -22,9 +22,7 @@ function FeedbackTabs() {
   return (
     <AquaPanel liquid>
       <Stack spacing={2.5}>
-        <Typography variant="h6" sx={{ fontWeight: 800 }}>
-          Feedback y navegacion local
-        </Typography>
+        <Typography variant="h6">Feedback y navegacion local</Typography>
         <Tabs value={tab} onChange={handleTabChange} variant="scrollable">
           <Tab label="Estados" />
           <Tab label="Tokens" />

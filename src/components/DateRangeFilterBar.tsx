@@ -18,7 +18,8 @@ export default function DateRangeFilterBar({
   label = 'Rango de Fechas:',
   onChange,
 }: DateRangeFilterBarProps) {
-  const toValue = (value: dayjs.Dayjs | null) => (value?.isValid() ? value.format('YYYY-MM-DD') : '');
+  const toValue = (value: dayjs.Dayjs | null) =>
+    value?.isValid() ? value.format('YYYY-MM-DD') : '';
 
   return (
     <Stack
@@ -42,13 +43,13 @@ export default function DateRangeFilterBar({
         label="Desde"
         onChange={(value) => onChange({ dateFrom: toValue(value), dateTo })}
         value={dateFrom ? dayjs(dateFrom) : null}
-        slotProps={{ textField: { size: 'small', fullWidth: true } }}
+        slotProps={{ textField: { size: 'small' } }}
       />
       <DatePicker
         label="Hasta"
         onChange={(value) => onChange({ dateFrom, dateTo: toValue(value) })}
         value={dateTo ? dayjs(dateTo) : null}
-        slotProps={{ textField: { size: 'small', fullWidth: true } }}
+        slotProps={{ textField: { size: 'small' } }}
       />
       {(dateFrom || dateTo) && (
         <Button size="small" variant="text" onClick={() => onChange({ dateFrom: '', dateTo: '' })}>

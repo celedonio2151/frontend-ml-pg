@@ -38,6 +38,7 @@ function ShowcaseTopbar() {
       </Stack>
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <TextField
+          size="small"
           placeholder="Buscar..."
           sx={{ display: { xs: 'none', md: 'block' }, width: 260 }}
           slotProps={{

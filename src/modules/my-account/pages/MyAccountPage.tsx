@@ -65,7 +65,7 @@ function ProfileTab() {
           </Typography>
           <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', mt: 0.5 }}>
             {(profile.roles ?? []).map((role) => (
-              <Chip key={role.id} label={role.name} size="small" color="primary" variant="outlined" />
+              <Chip key={role.id} label={role.name} color="primary" variant="outlined" />
             ))}
             <StatusPill
               label={profile.status ? 'Activo' : 'Inactivo'}
@@ -116,7 +116,12 @@ function MyMetersTab() {
         enableColumnFilter: false,
         cell: ({ getValue }) => {
           const active = getValue<boolean>();
-          return <StatusPill label={active ? 'Activo' : 'Inactivo'} tone={active ? 'success' : 'error'} />;
+          return (
+            <StatusPill
+              label={active ? 'Activo' : 'Inactivo'}
+              tone={active ? 'success' : 'error'}
+            />
+          );
         },
       },
     ],
@@ -134,7 +139,9 @@ function MyMetersTab() {
         ariaLabel="mis medidores"
         columns={columns}
         data={meters}
-        emptyMessage={metersQuery.isLoading ? 'Cargando...' : 'No tienes medidores registrados a tu nombre.'}
+        emptyMessage={
+          metersQuery.isLoading ? 'Cargando...' : 'No tienes medidores registrados a tu nombre.'
+        }
         initialPageSize={10}
         rowsLabel="medidores"
         searchPlaceholder="Buscar por número de medidor..."
@@ -231,11 +238,35 @@ export default function MyAccountPage() {
         </Stack>
       </Stack>
 
-      <Tabs value={tab} onChange={(_, value: TabKey) => setTab(value)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tab icon={<AccountCircleRounded fontSize="small" />} iconPosition="start" label="Perfil" value="perfil" />
-        <Tab icon={<SpeedRounded fontSize="small" />} iconPosition="start" label="Mis Medidores" value="medidores" />
-        <Tab icon={<WaterDropRounded fontSize="small" />} iconPosition="start" label="Mis Lecturas" value="lecturas" />
-        <Tab icon={<CalculateRounded fontSize="small" />} iconPosition="start" label="Simulador" value="simulador" />
+      <Tabs
+        value={tab}
+        onChange={(_, value: TabKey) => setTab(value)}
+        sx={{ borderBottom: 1, borderColor: 'divider' }}
+      >
+        <Tab
+          icon={<AccountCircleRounded fontSize="small" />}
+          iconPosition="start"
+          label="Perfil"
+          value="perfil"
+        />
+        <Tab
+          icon={<SpeedRounded fontSize="small" />}
+          iconPosition="start"
+          label="Mis Medidores"
+          value="medidores"
+        />
+        <Tab
+          icon={<WaterDropRounded fontSize="small" />}
+          iconPosition="start"
+          label="Mis Lecturas"
+          value="lecturas"
+        />
+        <Tab
+          icon={<CalculateRounded fontSize="small" />}
+          iconPosition="start"
+          label="Simulador"
+          value="simulador"
+        />
       </Tabs>
 
       {tab === 'perfil' && <ProfileTab />}

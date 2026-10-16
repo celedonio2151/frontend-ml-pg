@@ -11,7 +11,9 @@ function CircularProgressMock({ value }: CircularProgressMockProps) {
   const theme = useTheme();
 
   return (
-    <Box sx={{ position: 'relative', width: 134, height: 134, display: 'grid', placeItems: 'center' }}>
+    <Box
+      sx={{ position: 'relative', width: 134, height: 134, display: 'grid', placeItems: 'center' }}
+    >
       <Box
         component="svg"
         viewBox="0 0 134 134"
@@ -21,7 +23,9 @@ function CircularProgressMock({ value }: CircularProgressMockProps) {
           cx="67"
           cy="67"
           r="56"
-          stroke={theme.palette.mode === 'dark' ? 'rgba(8, 47, 73, 0.9)' : 'rgba(186, 230, 253, 0.82)'}
+          stroke={
+            theme.palette.mode === 'dark' ? 'rgba(8, 47, 73, 0.9)' : 'rgba(186, 230, 253, 0.82)'
+          }
           strokeWidth="10"
           fill="none"
         />
@@ -44,9 +48,7 @@ function CircularProgressMock({ value }: CircularProgressMockProps) {
         </defs>
       </Box>
       <Stack spacing={0} sx={{ alignItems: 'center' }}>
-        <Typography variant="h4" sx={{ fontWeight: 900 }}>
-          {value}%
-        </Typography>
+        <Typography variant="h4">{value}%</Typography>
         <Typography variant="caption" color="text.secondary">
           Cobrado
         </Typography>

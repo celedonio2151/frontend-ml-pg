@@ -10,7 +10,12 @@ const Button: Components<Omit<Theme, 'components'>>['MuiButton'] = {
       fontWeight: 600,
       textTransform: 'none',
       minHeight: 40,
-      transition: theme.transitions.create(['background-color', 'border-color', 'box-shadow', 'transform']),
+      transition: theme.transitions.create([
+        'background-color',
+        'border-color',
+        'box-shadow',
+        'transform',
+      ]),
       '&:hover': {
         transform: 'translateY(-1px)',
       },

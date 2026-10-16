@@ -1,6 +1,5 @@
-import type { FormEventHandler, ReactNode } from 'react';
-import CloseRounded from '@mui/icons-material/CloseRounded';
-import SaveRounded from '@mui/icons-material/SaveRounded';
+import type { ReactNode, SubmitEventHandler } from 'react';
+
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -10,9 +9,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+
+// MUI ICONS
+import CloseRounded from '@mui/icons-material/CloseRounded';
+import SaveRounded from '@mui/icons-material/SaveRounded';
 
 import AquaPanel from 'shared/ui/aqua/AquaPanel';
 
@@ -26,7 +29,7 @@ type FormDialogProps = {
   isSubmitting?: boolean;
   maxWidth?: DialogProps['maxWidth'];
   onClose: () => void;
-  onSubmit: FormEventHandler<HTMLFormElement>;
+  onSubmit: SubmitEventHandler<HTMLFormElement>;
   open: boolean;
   submitLabel?: string;
   submittingLabel?: string;
@@ -62,20 +65,46 @@ const FormDialog = ({
     <Dialog
       fullScreen={isMobile}
       fullWidth
+      scroll="body"
       maxWidth={maxWidth}
       onClose={handleClose}
       open={open}
       slotProps={{
         paper: {
+          // Con scroll="body" MUI centra el papel como inline-block: no cambiar su `display`.
           sx: {
             borderRadius: isMobile ? 0 : 3,
             boxShadow: 'none',
-            overflow: 'visible',
+            overflow: 'hidden',
+            // En móvil (fullScreen + scroll="body") MUI aplica además, por media query,
+            // maxWidth: calc(100% - 64px) según `maxWidth`, que gana a fullScreen y deja
+            // márgenes. `&&` sube la especificidad para forzar pantalla completa; la altura
+            // crece con el formulario (fullScreen la fija en 100% y se recortaría).
+            ...(isMobile
+              ? {
+                  '&&': {
+                    margin: 0,
+                    width: '100%',
+                    maxWidth: '100%',
+                    height: 'auto',
+                    minHeight: '100%',
+                    borderRadius: 0,
+                  },
+                }
+              : {}),
           },
         },
       }}
     >
-      <AquaPanel liquid sx={{ borderRadius: isMobile ? 0 : 3, p: { xs: 2, sm: 3 } }}>
+      <AquaPanel
+        liquid
+        sx={{
+          borderRadius: isMobile ? 0 : 3,
+          p: { xs: 2, sm: 3 },
+          pb: { xs: 'max(16px, env(safe-area-inset-bottom))', sm: 3 },
+          ...(isMobile ? { minHeight: '100dvh' } : {}),
+        }}
+      >
         <Stack spacing={2}>
           <DialogTitle
             sx={{
@@ -95,11 +124,17 @@ const FormDialog = ({
             </IconButton>
           </DialogTitle>
 
-          <Box component="form" id={formId} onSubmit={onSubmit} sx={{ position: 'relative', zIndex: 1 }}>
+          <Box
+            component="form"
+            id={formId}
+            onSubmit={onSubmit}
+            sx={{ position: 'relative', zIndex: 1 }}
+          >
             <Stack spacing={2}>
               {error ? <Alert severity="error">{error}</Alert> : null}
 
-              <DialogContent sx={{ overflow: 'visible', p: 0 }}>{children}</DialogContent>
+              {/* Sin scroll interno: con scroll="body" se desplaza toda la página. */}
+              <DialogContent sx={{ overflow: 'visible', p: 0, pt: 1 }}>{children}</DialogContent>
 
               <DialogActions
                 sx={{

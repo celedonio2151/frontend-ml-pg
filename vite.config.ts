@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: parseInt(env.VITE_PORT) || 3002,
       allowedHosts: ['localhost'],
+      host: '0.0.0.0',
     },
   };
 });

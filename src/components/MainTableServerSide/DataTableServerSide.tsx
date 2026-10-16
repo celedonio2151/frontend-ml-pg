@@ -34,9 +34,10 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+
+import type { SortParam } from 'shared/types/api-reponse';
 import { dataTableStyles } from './DataTable.styles';
 import { DataTablePagination } from './DataTablePagination';
-import type { SortParam } from 'shared/types/api-reponse';
 
 export type DataTableFilterOption = {
   label: string;
@@ -222,7 +223,6 @@ function DebouncedInput({
     }, debounce);
 
     return () => clearTimeout(timeout);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, debounce]);
 
   return (
@@ -232,7 +232,7 @@ function DebouncedInput({
       onChange={(e) => setValue(e.target.value)}
       slotProps={{
         htmlInput: { 'aria-label': ariaLabel },
-        ...props.slotProps
+        ...props.slotProps,
       }}
     />
   );
@@ -301,7 +301,7 @@ export default function DataTableServerSide<TData extends RowData>({
   sx,
   title,
   toolbarRight,
-  serverSide
+  serverSide,
 }: DataTableProps<TData>) {
   const [localColumnFilters, setLocalColumnFilters] = useState<ColumnFiltersState>([]);
   const [localGlobalFilter, setLocalGlobalFilter] = useState('');
@@ -314,10 +314,16 @@ export default function DataTableServerSide<TData extends RowData>({
   // Determine current state based on whether we are using serverSide
   const columnFilters = serverSide?.onColumnFiltersChange ? localColumnFilters : localColumnFilters; // Server-side filters can be locally tracked, just notified
   const globalFilter = serverSide ? serverSide.search : localGlobalFilter;
-  const pagination = useMemo(() => (
-    serverSide ? { pageIndex: serverSide.page - 1, pageSize: serverSide.pageSize } : (controlledPagination ?? localPagination)
-  ), [serverSide?.page, serverSide?.pageSize, controlledPagination, localPagination]);
-  const sorting = serverSide ? serverSide.sortBy.map(s => ({ id: s.whom, desc: s.order === 'desc' })) : localSorting;
+  const pagination = useMemo(
+    () =>
+      serverSide
+        ? { pageIndex: serverSide.page - 1, pageSize: serverSide.pageSize }
+        : (controlledPagination ?? localPagination),
+    [serverSide?.page, serverSide?.pageSize, controlledPagination, localPagination],
+  );
+  const sorting = serverSide
+    ? serverSide.sortBy.map((s) => ({ id: s.whom, desc: s.order === 'desc' }))
+    : localSorting;
 
   useEffect(() => {
     if (!enableColumnFilters) {
@@ -329,43 +335,57 @@ export default function DataTableServerSide<TData extends RowData>({
   }, [enableColumnFilters, serverSide]);
 
   // Handle Changes
-  const handleGlobalFilterChange = useCallback((value: string) => {
-    if (serverSide) {
-      serverSide.onSearchChange(value);
-    } else {
-      setLocalGlobalFilter(value);
-    }
-  }, [serverSide]);
-
-  const handlePaginationChange: OnChangeFn<PaginationState> = useCallback((updater) => {
-    const newPagination = typeof updater === 'function' ? updater(pagination) : updater;
-    if (serverSide) {
-      serverSide.onPageChange(newPagination.pageIndex + 1, newPagination.pageSize);
-    } else {
-      if (onPaginationChange) {
-        onPaginationChange(newPagination);
+  const handleGlobalFilterChange = useCallback(
+    (value: string) => {
+      if (serverSide) {
+        serverSide.onSearchChange(value);
       } else {
-        setLocalPagination(newPagination);
+        setLocalGlobalFilter(value);
       }
-    }
-  }, [pagination, serverSide, onPaginationChange]);
+    },
+    [serverSide],
+  );
 
-  const handleSortingChange: OnChangeFn<SortingState> = useCallback((updater) => {
-    const newSorting = typeof updater === 'function' ? updater(sorting) : updater;
-    if (serverSide) {
-      serverSide.onSortChange(newSorting.map(s => ({ whom: s.id, order: s.desc ? 'desc' : 'asc' })));
-    } else {
-      setLocalSorting(newSorting);
-    }
-  }, [sorting, serverSide]);
+  const handlePaginationChange: OnChangeFn<PaginationState> = useCallback(
+    (updater) => {
+      const newPagination = typeof updater === 'function' ? updater(pagination) : updater;
+      if (serverSide) {
+        serverSide.onPageChange(newPagination.pageIndex + 1, newPagination.pageSize);
+      } else {
+        if (onPaginationChange) {
+          onPaginationChange(newPagination);
+        } else {
+          setLocalPagination(newPagination);
+        }
+      }
+    },
+    [pagination, serverSide, onPaginationChange],
+  );
 
-  const handleColumnFiltersChange: OnChangeFn<ColumnFiltersState> = useCallback((updater) => {
-    const newFilters = typeof updater === 'function' ? updater(columnFilters) : updater;
-    setLocalColumnFilters(newFilters);
-    if (serverSide?.onColumnFiltersChange) {
-      serverSide.onColumnFiltersChange(newFilters.map(f => ({ id: f.id, value: f.value })));
-    }
-  }, [columnFilters, serverSide]);
+  const handleSortingChange: OnChangeFn<SortingState> = useCallback(
+    (updater) => {
+      const newSorting = typeof updater === 'function' ? updater(sorting) : updater;
+      if (serverSide) {
+        serverSide.onSortChange(
+          newSorting.map((s) => ({ whom: s.id, order: s.desc ? 'desc' : 'asc' })),
+        );
+      } else {
+        setLocalSorting(newSorting);
+      }
+    },
+    [sorting, serverSide],
+  );
+
+  const handleColumnFiltersChange: OnChangeFn<ColumnFiltersState> = useCallback(
+    (updater) => {
+      const newFilters = typeof updater === 'function' ? updater(columnFilters) : updater;
+      setLocalColumnFilters(newFilters);
+      if (serverSide?.onColumnFiltersChange) {
+        serverSide.onColumnFiltersChange(newFilters.map((f) => ({ id: f.id, value: f.value })));
+      }
+    },
+    [columnFilters, serverSide],
+  );
 
   // TanStack Table setup
   const table = useReactTable<TData>({
@@ -411,11 +431,7 @@ export default function DataTableServerSide<TData extends RowData>({
               </Tooltip>
             ) : null}
             <Box sx={{ minWidth: 0 }}>
-              {shouldShowTitle ? (
-                <Typography variant="h5" sx={{ fontWeight: 900 }}>
-                  {title}
-                </Typography>
-              ) : null}
+              {shouldShowTitle ? <Typography variant="h5">{title}</Typography> : null}
               <Typography variant={shouldShowTitle ? 'body2' : 'body1'} color="text.secondary">
                 {subtitle ?? toolbarSummary}
               </Typography>
@@ -507,7 +523,6 @@ export default function DataTableServerSide<TData extends RowData>({
     </Paper>
   );
 }
-
 
 /** Configuration for server-side pagination, filtering, and sorting */
 export type DataTableServerSide = {

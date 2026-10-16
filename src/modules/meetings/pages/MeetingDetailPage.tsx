@@ -169,7 +169,12 @@ export default function MeetingDetailPage() {
                   label="Documento"
                   value={
                     meeting.documentUrl ? (
-                      <Link href={meeting.documentUrl} rel="noreferrer" target="_blank" underline="hover">
+                      <Link
+                        href={meeting.documentUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                        underline="hover"
+                      >
                         Abrir documento
                       </Link>
                     ) : (
@@ -192,7 +197,7 @@ export default function MeetingDetailPage() {
                 <Stack direction="row" spacing={0.75} sx={{ flexWrap: 'wrap', mt: 1 }}>
                   {attendees.length > 0 ? (
                     attendees.map((attendee) => (
-                      <Chip key={attendee} label={attendee} size="small" variant="outlined" />
+                      <Chip key={attendee} label={attendee} variant="outlined" />
                     ))
                   ) : (
                     <Typography color="text.secondary" variant="body2">
@@ -206,7 +211,11 @@ export default function MeetingDetailPage() {
         </>
       ) : null}
 
-      <MeetingFormDialog meeting={meeting ?? null} onClose={() => setFormOpen(false)} open={formOpen} />
+      <MeetingFormDialog
+        meeting={meeting ?? null}
+        onClose={() => setFormOpen(false)}
+        open={formOpen}
+      />
     </Stack>
   );
 }

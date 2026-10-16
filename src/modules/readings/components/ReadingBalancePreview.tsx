@@ -91,7 +91,7 @@ export default function ReadingBalancePreview({
 
         {(balanceQuery.isFetching || waiting) && <CircularProgress size={20} />}
         {balance && !waiting && !isNegative && roundedConsumption !== null && (
-          <Typography variant="h5" color="primary.main" sx={{ fontWeight: 900 }}>
+          <Typography variant="h5" color="primary.main">
             {formatCurrency(balance.balance)}
           </Typography>
         )}

@@ -14,14 +14,8 @@ import {
   useCreateExpenseMutation,
   useUpdateExpenseMutation,
 } from 'modules/expenses/hooks/useExpenses';
-import {
-  expenseSchema,
-  type ExpenseFormValues,
-} from 'modules/expenses/schemas/expense.schemas';
-import {
-  ExpenseCategory,
-  type Expense,
-} from 'modules/expenses/types/expense.types';
+import { expenseSchema, type ExpenseFormValues } from 'modules/expenses/schemas/expense.schemas';
+import { ExpenseCategory, type Expense } from 'modules/expenses/types/expense.types';
 import { applyApiFieldErrors, getApiErrorMessage } from 'shared/utils/applyApiFieldErrors';
 
 type ExpenseFormDialogProps = {
@@ -51,11 +45,7 @@ const toFormValues = (expense?: Expense | null): ExpenseFormValues =>
       }
     : emptyValues;
 
-export default function ExpenseFormDialog({
-  expense,
-  onClose,
-  open,
-}: ExpenseFormDialogProps) {
+export default function ExpenseFormDialog({ expense, onClose, open }: ExpenseFormDialogProps) {
   const isEditMode = Boolean(expense);
   const createMutation = useCreateExpenseMutation();
   const updateMutation = useUpdateExpenseMutation();
@@ -186,7 +176,6 @@ export default function ExpenseFormDialog({
                 slotProps={{
                   textField: {
                     error: Boolean(errors.expenseDate),
-                    fullWidth: true,
                     helperText: errors.expenseDate?.message,
                   },
                 }}

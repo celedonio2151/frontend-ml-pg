@@ -125,7 +125,6 @@ export default function SignUpPage() {
               helperText={errors.name?.message}
               label="Nombre"
               required
-              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
@@ -143,7 +142,6 @@ export default function SignUpPage() {
               helperText={errors.surname?.message}
               label="Apellido"
               required
-              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
@@ -164,7 +162,6 @@ export default function SignUpPage() {
               helperText={errors.ci?.message}
               label="Carnet de identidad"
               required
-              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
@@ -182,7 +179,6 @@ export default function SignUpPage() {
               helperText={errors.phoneNumber?.message}
               label="Telefono"
               required
-              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
@@ -203,7 +199,6 @@ export default function SignUpPage() {
             helperText={errors.email?.message}
             label="Correo"
             required
-            size="medium"
             slotProps={{
               input: {
                 startAdornment: (
@@ -225,7 +220,6 @@ export default function SignUpPage() {
               helperText={errors.password?.message}
               label="Contrasena"
               required
-              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (
@@ -255,7 +249,6 @@ export default function SignUpPage() {
               helperText={errors.birthDate?.message}
               label="Fecha de nacimiento"
               required
-              size="medium"
               slotProps={{
                 input: {
                   startAdornment: (

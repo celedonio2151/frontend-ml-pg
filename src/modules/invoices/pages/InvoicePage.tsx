@@ -22,11 +22,16 @@ import DataTableServerSide from 'components/MainTableServerSide/DataTableServerS
 import PayInvoiceDialog from 'modules/invoices/components/PayInvoiceDialog';
 import { useInvoices } from 'modules/invoices/hooks/useInvoices';
 import { invoicesService } from 'modules/invoices/services/invoices.service';
-import type {
-  Invoice,
-  InvoiceStatusType,
-  InvoiceWithReadingMeter,
+import {
+  InvoiceStatus,
+  PaymentMethod,
+  type Invoice,
+  type InvoicesListParams,
+  type InvoiceStatusType,
+  type InvoiceWithReadingMeter,
+  type PaymentMethodType,
 } from 'modules/invoices/types/invoice.types';
+import DateRangeFilterBar from 'components/DateRangeFilterBar';
 import paths from 'router/paths';
 import { useDebounce } from 'shared/hooks/useDebounce';
 import { useTableServerSide } from 'shared/hooks/useTableServerSide';
@@ -38,20 +43,31 @@ export default function InvoicePage() {
   const navigate = useNavigate();
   const [payInvoice, setPayInvoice] = useState<Invoice | null>(null);
 
-  const { page, pageSize, search, sortBy, serverSideProps } = useTableServerSide(10, [
+  const { page, pageSize, search, sortBy, serverSideProps, resetPage } = useTableServerSide(10, [
     { order: 'desc', whom: 'createdAt' },
   ]);
+  const [columnFilters, setColumnFilters] = useState<Array<{ id: string; value: unknown }>>([]);
+  const [dueRange, setDueRange] = useState({ dateFrom: '', dateTo: '' });
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const invoicesParams = useMemo(
+  const statusFilter = columnFilters.find((f) => f.id === 'status')?.value as
+    InvoiceStatusType | undefined;
+  const paymentMethodFilter = columnFilters.find((f) => f.id === 'paymentMethod')?.value as
+    PaymentMethodType | undefined;
+
+  const invoicesParams = useMemo<InvoicesListParams>(
     () => ({
       limit: pageSize,
       page,
       sortBy,
       q: debouncedSearch,
+      status: statusFilter,
+      paymentMethod: paymentMethodFilter,
+      dueFrom: dueRange.dateFrom || undefined,
+      dueTo: dueRange.dateTo || undefined,
     }),
-    [pageSize, page, sortBy, debouncedSearch],
+    [pageSize, page, sortBy, debouncedSearch, statusFilter, paymentMethodFilter, dueRange],
   );
 
   const invoicesQuery = useInvoices(invoicesParams);
@@ -61,8 +77,12 @@ export default function InvoicePage() {
     () => ({
       ...serverSideProps,
       totalRows: invoicesQuery.data?.meta?.total ?? 0,
+      onColumnFiltersChange: (newFilters) => {
+        setColumnFilters(newFilters);
+        resetPage();
+      },
     }),
-    [serverSideProps, invoicesQuery.data?.meta?.total],
+    [serverSideProps, invoicesQuery.data?.meta?.total, resetPage],
   );
 
   const handleOpenPdf = useCallback(async (invoiceId: string) => {
@@ -112,12 +132,28 @@ export default function InvoicePage() {
       {
         accessorKey: 'status',
         header: 'Estado',
-        enableColumnFilter: false,
+        meta: {
+          filterVariant: 'select',
+          filterOptions: InvoiceStatus.options.map((o) => ({ label: o.label, value: o.value })),
+        },
         cell: ({ getValue }) => {
           const status = getValue<InvoiceStatusType>();
           const props = getStatusProps(status);
           return <StatusPill {...props} />;
         },
+      },
+      {
+        accessorKey: 'paymentMethod',
+        header: 'Método',
+        meta: {
+          filterVariant: 'select',
+          filterOptions: PaymentMethod.options.map((o) => ({ label: o.label, value: o.value })),
+        },
+        cell: ({ getValue }) => (
+          <Typography variant="body2" color="text.secondary">
+            {PaymentMethod.getLabel(getValue<PaymentMethodType | null>())}
+          </Typography>
+        ),
       },
       {
         accessorFn: (row) => `${row.reading.ownerName} ${row.reading.ownerSurname}`,
@@ -237,6 +273,16 @@ export default function InvoicePage() {
           {getApiErrorMessage(invoicesQuery.error, 'No se pudieron cargar las facturas')}
         </Alert>
       ) : null}
+
+      <DateRangeFilterBar
+        dateFrom={dueRange.dateFrom}
+        dateTo={dueRange.dateTo}
+        label="Vencimiento:"
+        onChange={(range) => {
+          setDueRange(range);
+          resetPage();
+        }}
+      />
 
       <DataTableServerSide<InvoiceWithReadingMeter>
         serverSide={serverSideConfig}

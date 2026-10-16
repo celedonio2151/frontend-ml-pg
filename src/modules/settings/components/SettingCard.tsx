@@ -130,9 +130,7 @@ export default function SettingCard({
             </Typography>
           </Stack>
 
-          {setting.readOnly && (
-            <Chip icon={<LockRounded />} label="Sistema" size="small" variant="outlined" />
-          )}
+          {setting.readOnly && <Chip icon={<LockRounded />} label="Sistema" variant="outlined" />}
         </Stack>
 
         <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>

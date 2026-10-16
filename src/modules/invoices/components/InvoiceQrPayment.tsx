@@ -56,16 +56,17 @@ export default function InvoiceQrPayment({ active, invoiceId, onPaid }: InvoiceQ
   const statusQuery = useQrPaymentStatus(active ? invoiceId : undefined);
   const status = statusQuery.data?.qrStatus ?? qr?.status;
   const isDuplicate = Boolean(statusQuery.data?.duplicate);
+  const isAmountMismatch = Boolean(statusQuery.data?.amountMismatch);
 
   const paidNotifiedRef = useRef(false);
   useEffect(() => {
-    if (status === 'PAID' && !paidNotifiedRef.current) {
+    if (status === 'PAID' && !isAmountMismatch && !paidNotifiedRef.current) {
       paidNotifiedRef.current = true;
       onPaid?.();
     } else if (status !== 'PAID') {
       paidNotifiedRef.current = false;
     }
-  }, [status, onPaid]);
+  }, [status, isAmountMismatch, onPaid]);
 
   if (!active) return null;
 
@@ -140,10 +141,21 @@ export default function InvoiceQrPayment({ active, invoiceId, onPaid }: InvoiceQ
         </Box>
       )}
 
-      {isPaid && (
+      {isPaid && isAmountMismatch && (
+        <Alert severity="warning" sx={{ width: '100%' }}>
+          El QR fue pagado, pero el monto de la factura cambió y <strong>no se liquidó</strong>.
+          Requiere revisión manual.
+        </Alert>
+      )}
+
+      {isPaid && !isAmountMismatch && (
         <Stack spacing={1} sx={{ alignItems: 'center', py: 2 }}>
           <CheckCircleRounded color="success" sx={{ fontSize: 64 }} />
-          <Typography variant="body1" color="success.main" sx={{ fontWeight: 700, textAlign: 'center' }}>
+          <Typography
+            variant="body1"
+            color="success.main"
+            sx={{ fontWeight: 700, textAlign: 'center' }}
+          >
             ¡Pago confirmado! Actualizando factura...
           </Typography>
           {isDuplicate && (
@@ -157,7 +169,11 @@ export default function InvoiceQrPayment({ active, invoiceId, onPaid }: InvoiceQ
 
       {!isPaid && !isTerminalFailure && (
         <Stack spacing={1} sx={{ alignItems: 'center', width: '100%' }}>
-          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontWeight: 500 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ textAlign: 'center', fontWeight: 500 }}
+          >
             Escanea el QR desde tu aplicación móvil bancaria
           </Typography>
           <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', justifyContent: 'center' }}>

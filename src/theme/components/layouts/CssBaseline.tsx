@@ -27,7 +27,8 @@ const CssBaseline: Components<Omit<Theme, 'components'>>['MuiCssBaseline'] = {
       background: theme.palette.mode === 'dark' ? '#0a1628' : '#dff7ff',
     },
     '*::-webkit-scrollbar-thumb': {
-      background: theme.palette.mode === 'dark' ? 'rgba(6, 182, 212, 0.35)' : 'rgba(2, 132, 199, 0.34)',
+      background:
+        theme.palette.mode === 'dark' ? 'rgba(6, 182, 212, 0.35)' : 'rgba(2, 132, 199, 0.34)',
       borderRadius: 999,
     },
     '@keyframes aquaPulseRing': {

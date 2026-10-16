@@ -108,7 +108,6 @@ function MetricCard({
         variant="h5"
         sx={{
           fontFamily: 'JetBrains Mono, Consolas, monospace',
-          fontWeight: 900,
           color: highlight ? 'primary.light' : 'text.primary',
           mt: 0.5,
         }}
@@ -410,7 +409,6 @@ export default function ReadingDetailPage() {
                       value={
                         <Chip
                           label={reading.invoice.paymentMethod}
-                          size="small"
                           variant="outlined"
                           color="primary"
                         />

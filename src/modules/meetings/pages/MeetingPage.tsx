@@ -104,15 +104,15 @@ export default function MeetingPage() {
           return (
             <Stack direction="row" spacing={0.75} sx={{ flexWrap: 'wrap' }}>
               {attendees.length > 0 ? (
-                attendees.slice(0, 3).map((attendee) => (
-                  <Chip key={attendee} label={attendee} size="small" variant="outlined" />
-                ))
+                attendees
+                  .slice(0, 3)
+                  .map((attendee) => <Chip key={attendee} label={attendee} variant="outlined" />)
               ) : (
                 <Typography color="text.secondary" variant="body2">
                   Sin asistentes
                 </Typography>
               )}
-              {attendees.length > 3 ? <Chip label={`+${attendees.length - 3}`} size="small" /> : null}
+              {attendees.length > 3 ? <Chip label={`+${attendees.length - 3}`} /> : null}
             </Stack>
           );
         },
@@ -173,7 +173,11 @@ export default function MeetingPage() {
         cell: ({ row }) => (
           <Stack direction="row" spacing={0.75} sx={{ justifyContent: 'flex-end' }}>
             <Tooltip title="Ver detalle">
-              <IconButton color="primary" onClick={() => handleShowDetail(row.original)} size="small">
+              <IconButton
+                color="primary"
+                onClick={() => handleShowDetail(row.original)}
+                size="small"
+              >
                 <VisibilityRounded fontSize="small" />
               </IconButton>
             </Tooltip>

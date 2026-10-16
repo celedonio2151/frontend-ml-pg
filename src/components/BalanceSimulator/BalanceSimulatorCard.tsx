@@ -34,9 +34,7 @@ export default function BalanceSimulatorCard({ compact = false }: BalanceSimulat
       {!compact && (
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
           <CalculateRounded color="primary" />
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>
-            Simular saldo a pagar
-          </Typography>
+          <Typography variant="h6">Simular saldo a pagar</Typography>
         </Stack>
       )}
       <Typography variant="body2" color="text.secondary">
@@ -82,7 +80,7 @@ export default function BalanceSimulatorCard({ compact = false }: BalanceSimulat
           <Typography variant="body2" color="text.secondary">
             Saldo estimado para {simulationQuery.data.cubicMeters} m³:
           </Typography>
-          <Typography variant="h4" color="primary.main" sx={{ fontWeight: 900 }}>
+          <Typography variant="h4" color="primary.main">
             {formatCurrency(simulationQuery.data.balance)}
           </Typography>
         </Box>

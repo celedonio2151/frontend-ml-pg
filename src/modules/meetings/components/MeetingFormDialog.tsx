@@ -156,7 +156,6 @@ export default function MeetingFormDialog({ meeting, onClose, open }: MeetingFor
     >
       <Stack direction={{ xs: 'column' }} spacing={2}>
         <TextField
-          size="medium"
           error={Boolean(errors.title)}
           fullWidth
           helperText={errors.title?.message}
@@ -185,7 +184,6 @@ export default function MeetingFormDialog({ meeting, onClose, open }: MeetingFor
                 slotProps={{
                   textField: {
                     error: Boolean(errors.meetingDate),
-                    fullWidth: true,
                     helperText: errors.meetingDate?.message,
                     slotProps: {
                       input: {
@@ -203,7 +201,6 @@ export default function MeetingFormDialog({ meeting, onClose, open }: MeetingFor
           />
 
           <TextField
-            size="medium"
             error={Boolean(errors.documentUrl)}
             fullWidth
             helperText={errors.documentUrl?.message}

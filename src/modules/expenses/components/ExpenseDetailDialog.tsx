@@ -48,9 +48,7 @@ export default function ExpenseDetailDialog({ expenseId, onClose }: ExpenseDetai
   return (
     <Dialog fullWidth maxWidth="sm" onClose={onClose} open={Boolean(expenseId)}>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" sx={{ fontWeight: 800 }}>
-          Detalle del gasto
-        </Typography>
+        <Typography variant="h6">Detalle del gasto</Typography>
         <IconButton onClick={onClose} size="small">
           <CloseRounded />
         </IconButton>
@@ -71,7 +69,7 @@ export default function ExpenseDetailDialog({ expenseId, onClose }: ExpenseDetai
         {expense && (
           <Stack spacing={2.5}>
             <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="h4" color="primary.main" sx={{ fontWeight: 900 }}>
+              <Typography variant="h4" color="primary.main">
                 {formatCurrency(expense.amount)}
               </Typography>
               <StatusPill
@@ -83,9 +81,13 @@ export default function ExpenseDetailDialog({ expenseId, onClose }: ExpenseDetai
 
             <Typography variant="body1">{expense.description}</Typography>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+            <Box
+              sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}
+            >
               <Field label="Categoría">{ExpenseCategory.getLabel(expense.category)}</Field>
-              <Field label="Fecha del gasto">{formateDate(expense.expenseDate, 'DD MMM YYYY')}</Field>
+              <Field label="Fecha del gasto">
+                {formateDate(expense.expenseDate, 'DD MMM YYYY')}
+              </Field>
               <Field label="Nº de recibo">{expense.receiptNumber || '—'}</Field>
               <Field label="Registrado por">{userName(expense.registeredBy)}</Field>
               <Field label="Revisado por">{userName(expense.reviewedBy)}</Field>
@@ -96,7 +98,8 @@ export default function ExpenseDetailDialog({ expenseId, onClose }: ExpenseDetai
 
             {expense.status === 'REJECTED' && (
               <Alert severity="error">
-                <strong>Motivo del rechazo:</strong> {expense.rejectionReason || 'Sin motivo indicado'}
+                <strong>Motivo del rechazo:</strong>{' '}
+                {expense.rejectionReason || 'Sin motivo indicado'}
               </Alert>
             )}
 
