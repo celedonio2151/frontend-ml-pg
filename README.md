@@ -1,73 +1,88 @@
-# React + TypeScript + Vite
+# AquaAdmin — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Panel de administración web para la gestión de un sistema comunitario de agua potable. Proyecto de grado.
 
-Currently, two official plugins are available:
+Permite administrar socios, medidores, lecturas mensuales, facturación (incluido el cobro por QR bancario), tesorería, gastos, tarifas, mesa directiva, reuniones y la configuración del sistema.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Módulos
 
-## React Compiler
+| Módulo | Qué hace |
+| --- | --- |
+| Usuarios y roles | Alta y edición de socios, asignación de roles (ADMIN, USER, TECHNICIAN, READER) |
+| Medidores | Registro de medidores, cambio de propietario |
+| Lecturas | Registro mensual de lecturas, con vista previa del saldo a pagar |
+| Facturas | Listado, detalle, pago manual o por **QR** (con verificación automática del pago) y morosos |
+| Tesorería | Movimientos de caja, saldo, resumen por periodo y ajustes manuales |
+| Gastos | Registro, aprobación y rechazo de gastos |
+| Tarifas | Tramos de cobro por consumo (m³) y simulador de saldo |
+| Mesa directiva | Designación de cargos por periodo |
+| Reuniones | Registro de reuniones y actas |
+| Reportes | Reportes y gráficos de consumo y cobranza |
+| Configuración | Parámetros del sistema (morosidad, QR, datos de la comunidad) |
+| Mi cuenta | Perfil, medidores y lecturas del usuario autenticado |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tecnologías
 
-## Expanding the ESLint configuration
+- **React 19** + **TypeScript** + **Vite**
+- **MUI 9** (Material UI) y **MUI X Date Pickers** para la interfaz
+- **TanStack Query** para el estado del servidor y **TanStack Table v8** para las tablas
+- **React Hook Form** + **Zod** para formularios y validación
+- **React Router**, **Zustand** (sesión), **Axios**, **Day.js**, **ECharts**
+- **Oxlint** como linter y **Vitest** + **Testing Library** para pruebas
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+> **TanStack Table está fijado en v8** (`^8.21.3`). La v9 es una reescritura con cambios incompatibles (features explícitas, `useTable`, nuevos genéricos en los tipos); migrar requiere actualizar los componentes de tabla de `src/components/MainTable*`.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Requisitos
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Node.js 24 o superior
+- pnpm 11 o superior
+- El backend (API REST) en ejecución
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Instalación
+
+```bash
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Crea un archivo `.env` en la raíz con:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# URL base de la API (por defecto: http://localhost:3000/api/v1)
+VITE_API_URL=http://localhost:3000/api/v1
+# Puerto del servidor de desarrollo (por defecto: 3002)
+VITE_PORT=3002
 ```
+
+## Scripts
+
+| Comando | Descripción |
+| --- | --- |
+| `pnpm dev` | Servidor de desarrollo con recarga en caliente |
+| `pnpm build` | Verifica tipos (`tsc -b`) y genera el build de producción en `dist/` |
+| `pnpm preview` | Sirve localmente el build de producción |
+| `pnpm lint` | Analiza el código con Oxlint |
+
+## Estructura
+
+```
+src/
+├── app/            # Proveedores globales (tema, React Query, fechas)
+├── components/     # Componentes reutilizables (FormDialog, tablas, etc.)
+├── layouts/        # Layout principal (sidebar, topbar) y de autenticación
+├── modules/        # Un módulo por dominio: pages, components, hooks, services, types, schemas
+├── router/         # Rutas y paths de la aplicación
+├── shared/         # Hooks, utilidades, cliente HTTP y UI compartida
+└── theme/          # Tema de MUI: paleta, tipografía y personalización de componentes
+```
+
+Cada módulo de `src/modules` sigue la misma organización: `services` (llamadas a la API), `hooks` (TanStack Query), `types`, `schemas` (Zod), `components` y `pages`.
+
+## Convenciones
+
+- **Estilos globales en el tema:** la apariencia base de los componentes de MUI se define en `src/theme/components/` (un archivo por componente). En las pantallas solo se pasan props con significado (`color`, `size`, `variant`) en lugar de repetir `sx`.
+- **Llamadas a la API:** se hacen mediante el `httpClient` de `src/shared/lib/http-client.ts`, que agrega el token, desempaqueta las respuestas y normaliza los errores en `ApiError`.
+- **Relaciones de la API:** los listados y detalles piden explícitamente sus relaciones con el parámetro `include` (por ejemplo `include=reading,meter`).
+
+## API
+
+La especificación OpenAPI del backend está en [`api-doc.json`](./api-doc.json).
